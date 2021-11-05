@@ -1,11 +1,17 @@
 # APIs Manage Class
 
 ## General Settings
-```json
+```
+endpoint: https://midtermclassapi.herokuapp.com
+```
+```javascript
 headers: { 
     "Content-Type": "application/json"
 }
 ```
+
+
+
 
 ### User register
 `POST` : /api/user/register
