@@ -12,6 +12,7 @@ const userList = (req, res) => {
             emai: 'email 2'
         }
     ]
+    
     return res.status(200).send({data})
 }
 
