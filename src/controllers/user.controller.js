@@ -4,6 +4,8 @@ const {validateEmail} = require('../helpers/form.helper')
 const { User, userModel } = require('../models/user.model')
 const { v1: uuidv1 } = require('uuid');
 const CryptoJS = require("crypto-js");
+const ValidateService = require('../services/validate.service')
+
 
 const userList = (req, res) => {
     const data = [
@@ -32,12 +34,12 @@ const userRegister = async (req, res) => {
 
     let user = new User(req.body)
 
-    // console.log(req.body)
-    if (!user.username || !user.password || !user.fullname) 
-        return res.status(BAD_REQUEST).send({message: "Infomation invalid"})
-    
-    if (!validateEmail(user.email))
-        return res.status(BAD_REQUEST).send({message: "Email invalid", errors: {email: 'Email invalid'}})
+    let validate = new ValidateService(user)
+    validate.required(['username', 'password', 'email', 'fullname'])
+    validate.validateEmail()
+
+    if (validate.hasError())
+        return res.status(BAD_REQUEST).send({message: "Regsiter failed", errors: validate.errors})
 
     // check username exists
     const userQuery = await userModel.findOne({username: user.username})
