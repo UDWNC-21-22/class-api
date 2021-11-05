@@ -3,11 +3,16 @@ var express = require('express');
 var path = require('path');
 var cookieParser = require('cookie-parser');
 var logger = require('morgan');
-
+var Connect = require('./src/config/database.js');
 var indexRouter = require('./src/routes/index');
 var usersRouter = require('./src/routes/users');
 
 var app = express();
+
+Connect()
+    .then(() => console.log("connect db success"))
+    .catch(err => console.log("connect db faild: ", err))
+Promise = global.Promise;
 
 // view engine setup
 app.set('views', path.join(__dirname, 'views'));
