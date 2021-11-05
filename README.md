@@ -14,7 +14,7 @@ headers: {
 
 
 ### User register
-`POST` : /api/user/register
+`POST` : /user/register
 
 ```json
 {
