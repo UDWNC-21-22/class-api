@@ -5,7 +5,11 @@ var router = express.Router();
 
 
 /* GET users listing. */
-router.get('/', teacherMiddleware, teacherInfo);
+router.get('/:id', teacherMiddleware, teacherInfo);
+
+// router.get("/:id", (req, res)=>{
+//     req.params
+// })
 
 
 

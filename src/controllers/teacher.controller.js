@@ -9,9 +9,11 @@ const JwtService = require('../services/jwt.service')
 const jwtService = new JwtService()
 
 
-const teacherInfo = (req, res) => {
-    let user = new User(req.user)
-    return res.status(OK).send({data: user})
+const teacherInfo = async (req, res) => {
+    let userQuery = await userModel.findOne({id: req.params.id, role: 'teacher'})
+    if (!userQuery)
+        return res.status(BAD_REQUEST).send({message: 'Teacher not found'})
+    return res.status(OK).send({data: new User(userQuery)})
 }
 
 module.exports = {

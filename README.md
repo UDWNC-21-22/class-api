@@ -38,3 +38,6 @@ headers: {
 
 ### User authenticate
 `GET` : /user/authenticate
+
+### Get info teacher
+`GET` : /teacher/:id
