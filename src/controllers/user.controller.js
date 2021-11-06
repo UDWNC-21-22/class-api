@@ -37,7 +37,7 @@ const userRegister = async (req, res) => {
     let user = new User(req.body)
 
     let validate = new ValidateService(user)
-    validate.required(['username', 'password', 'email', 'fullname'])
+    validate.required(['username', 'password', 'email', 'fullname', 'role'])
     validate.validateEmail()
 
     if (validate.hasError())
@@ -74,21 +74,24 @@ const userRegister = async (req, res) => {
 
 const userLogin = async (req, res) => {
     let user = new User(req.body);
+    // console.log(user)
     let formValidate = new ValidateService(user);
     formValidate.required(['username', 'password'])
     if (formValidate.hasError())
         return res.status(BAD_REQUEST).send({message: 'Login failed', errors: formValidate.errors})
 
-    let userQuery = await userModel.findOne({username: user.username})
-    if (!userQuery || (userQuery.password != CryptoJS.MD5(user.password).toString() ))
+    let userQuery = await userModel.findOne({username: user.username, password: CryptoJS.MD5(user.password).toString()})
+    if (!userQuery)
         return res.status(BAD_REQUEST).send({message: 'Username or password invalid'})
+    
     
     
     userQuery = new User(userQuery._doc)
     userQuery.access_token = jwtService.generateJwt(userQuery)
+    // console.log(userQuery)
 
     try{
-        await userModel.updateOne({id: userQuery.id, userQuery})
+        await userModel.updateOne({id: userQuery.id}, userQuery)
         return res.status(OK).send({message: 'Login successfully', data: userQuery})
     }
     catch (err){
@@ -107,13 +110,16 @@ const authenticate = async (req, res) => {
     let authorization = req.headers.authorization;
     let accessToken = authorization.split(" ")[1].trim();
     let data = jwtService.verifyJwt(accessToken)
+    // console.log(data)
     
     if (!data)
         return res.status(FORBIDDEN).send({message: 'Access token invalid'})
 
     let user = await userModel.findOne({id: data.id})
 
-    return res.status(OK).send({data: user})
+    // console.log(user)
+
+    return res.status(OK).send({data: new User(user)})
 
 }
 
