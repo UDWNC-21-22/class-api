@@ -7,15 +7,11 @@ module.exports = class JwtService {
     static STATUS_INVALID = 1;
     static STATUS_EXPIRED = 2;
 
-    constructor(obj){
-        this.obj = obj;
-    }
-
-    async generateJwt(){
+    generateJwt(obj){
         const payload = JSON.stringify({
-            id: this.obj.id,
-            username: this.obj.username,
-            email: this.obj.email
+            id: obj.id,
+            username: obj.username,
+            email: obj.email
         });
 
         return jwt.sign({

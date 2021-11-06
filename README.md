@@ -6,7 +6,8 @@ endpoint: https://midtermclassapi.herokuapp.com
 ```
 ```javascript
 headers: { 
-    "Content-Type": "application/json"
+    "Content-Type": "application/json",
+    "Authorization": "Bearer <access_token>"
 }
 ```
 
@@ -24,3 +25,16 @@ headers: {
     "fullname": "Khoi Nguyen"
 }
 ```
+
+### User login
+`POST` : /user/login
+
+```json
+{
+    "username": "khoi_pro",
+    "password": "1234567",
+}
+```
+
+### User authenticate
+`GET` : /user/authenticate

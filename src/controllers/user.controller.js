@@ -6,6 +6,8 @@ const { v1: uuidv1 } = require('uuid');
 const CryptoJS = require("crypto-js");
 const ValidateService = require('../services/validate.service')
 const JwtService = require('../services/jwt.service')
+const jwtService = new JwtService()
+
 
 const userList = (req, res) => {
     const data = [
@@ -83,8 +85,7 @@ const userLogin = async (req, res) => {
     
     
     userQuery = new User(userQuery._doc)
-    const jwtService = new JwtService(userQuery)
-    userQuery.access_token = await jwtService.generateJwt()
+    userQuery.access_token = jwtService.generateJwt(userQuery)
 
     try{
         await userModel.updateOne({id: userQuery.id, userQuery})
@@ -98,9 +99,29 @@ const userLogin = async (req, res) => {
 }
 
 
+/**
+ * User authenticate
+ */
+
+const authenticate = async (req, res) => {
+    let authorization = req.headers.authorization;
+    let accessToken = authorization.split(" ")[1].trim();
+    let data = jwtService.verifyJwt(accessToken)
+    
+    if (!data)
+        return res.status(FORBIDDEN).send({message: 'Access token invalid'})
+
+    let user = await userModel.findOne({id: data.id})
+
+    return res.status(OK).send({data: user})
+
+}
+
+
 
 module.exports = {
     userList,
     userRegister,
-    userLogin
+    userLogin,
+    authenticate
 }
