@@ -7,6 +7,7 @@ class User {
         password,
         fullname,
         email,
+        role,
         access_token
     }) {
         this.id = id;
@@ -14,6 +15,11 @@ class User {
         this.password = password;
         this.fullname = fullname;
         this.email = email;
+        if (role != 'teacher' && role != 'student') {
+            this.role = null;
+        }
+        else this.role = role;
+
         this.access_token = access_token;
     }
 }
@@ -24,6 +30,7 @@ const userSchema = new mongoose.Schema({
     password: String,
     fullname: String,
     email: String,
+    role: String,
     access_token: String,
 });
 

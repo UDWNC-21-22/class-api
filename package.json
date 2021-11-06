@@ -4,7 +4,7 @@
   "type": "commonjs",
   "private": true,
   "engines": {
-    "node": "15.0.1",
+    "node": "12.x",
     "npm": "7.0.3"
   },
   "scripts": {
@@ -20,6 +20,7 @@
     "express": "~4.16.1",
     "http-errors": "~1.6.3",
     "http-status-codes": "^2.1.4",
+    "jsonwebtoken": "^8.5.1",
     "mongoose": "^6.0.12",
     "morgan": "~1.9.1",
     "uuid": "^8.3.2"

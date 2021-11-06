@@ -5,7 +5,7 @@ const { User, userModel } = require('../models/user.model')
 const { v1: uuidv1 } = require('uuid');
 const CryptoJS = require("crypto-js");
 const ValidateService = require('../services/validate.service')
-
+const JwtService = require('../services/jwt.service')
 
 const userList = (req, res) => {
     const data = [
@@ -64,9 +64,43 @@ const userRegister = async (req, res) => {
 }
 
 
+/**
+ * User login
+ * @param username string
+ * @param password string
+ */
+
+const userLogin = async (req, res) => {
+    let user = new User(req.body);
+    let formValidate = new ValidateService(user);
+    formValidate.required(['username', 'password'])
+    if (formValidate.hasError())
+        return res.status(BAD_REQUEST).send({message: 'Login failed', errors: formValidate.errors})
+
+    let userQuery = await userModel.findOne({username: user.username})
+    if (!userQuery || (userQuery.password != CryptoJS.MD5(user.password).toString() ))
+        return res.status(BAD_REQUEST).send({message: 'Username or password invalid'})
+    
+    
+    userQuery = new User(userQuery._doc)
+    const jwtService = new JwtService(userQuery)
+    userQuery.access_token = await jwtService.generateJwt()
+
+    try{
+        await userModel.updateOne({id: userQuery.id, userQuery})
+        return res.status(OK).send({message: 'Login successfully', data: userQuery})
+    }
+    catch (err){
+        console.log(err);
+        return res.status(BAD_GATEWAY).send({message: "OOps"})
+    }
+
+}
+
 
 
 module.exports = {
     userList,
-    userRegister
+    userRegister,
+    userLogin
 }
