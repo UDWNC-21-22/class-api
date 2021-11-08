@@ -2,13 +2,13 @@ const mongoose = require('mongoose');
 
 class User {
     constructor({
-        id,
-        username,
-        password,
-        fullname,
-        email,
-        role,
-        access_token
+        id=null,
+        username=null,
+        password=null,
+        fullname=null,
+        email=null,
+        role=null,
+        access_token=null
     }) {
         this.id = id;
         this.username = username;

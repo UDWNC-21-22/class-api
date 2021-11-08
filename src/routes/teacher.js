@@ -1,15 +1,18 @@
 var express = require('express');
 const { teacherInfo } = require('../controllers/teacher.controller');
-const { teacherMiddleware } = require('../middlewares/jwt.middleware');
+const { Middleware } = require('../middlewares/jwt.middleware');
 var router = express.Router();
 
 
-/* GET users listing. */
-router.get('/:id', teacherMiddleware, teacherInfo);
+// Not Permission
+router.get('/test', function (req, res) {
+    return res.send(true)
+})
 
-// router.get("/:id", (req, res)=>{
-//     req.params
-// })
+// Permission of user must is "teacher"
+router.use(async (req, res, next) => await new Middleware(req, res, next).permission('teacher'))
+router.get('/:id', teacherInfo);
+
 
 
 
