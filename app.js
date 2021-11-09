@@ -9,6 +9,7 @@ var usersRouter = require('./src/routes/users');
 var teacherRouter = require('./src/routes/teacher');
 
 var app = express();
+app.use(cors())
 
 Connect()
     .then(() => console.log("connect db success"))
