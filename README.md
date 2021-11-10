@@ -22,7 +22,8 @@ headers: {
     "username": "khoi_pro",
     "password": "1234567",
     "email": "khoi@gmail.com",
-    "fullname": "Khoi Nguyen"
+    "fullname": "Khoi Nguyen",
+    "role": "student"
 }
 ```
 

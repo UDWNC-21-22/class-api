@@ -7,19 +7,17 @@ class User {
         password=null,
         fullname=null,
         email=null,
-        role=null,
-        access_token=null
+        classIdOwner=[],
+        classIdMember=[],
+        access_token=null,
     }) {
         this.id = id;
         this.username = username;
         this.password = password;
         this.fullname = fullname;
         this.email = email;
-        if (role != 'teacher' && role != 'student') {
-            this.role = null;
-        }
-        else this.role = role;
-
+        this.classIdMember = classIdMember;
+        this.classIdOwner = classIdOwner;
         this.access_token = access_token;
     }
 }
@@ -30,7 +28,8 @@ const userSchema = new mongoose.Schema({
     password: String,
     fullname: String,
     email: String,
-    role: String,
+    classIdOwner: [String],
+    classIdMember: [String],
     access_token: String,
 });
 

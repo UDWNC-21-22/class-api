@@ -16,15 +16,15 @@ class Middleware {
 
     }
 
-    async permission(role) {
-        await this.getInfo()
+    // async permission(role) {
+    //     await this.getInfo()
 
-        if (!!this.error) return this.res.status(UNAUTHORIZED).send(this.error)
-        if (this.user.role != role) return this.res.status(UNAUTHORIZED).send({ message: 'You not permission', errorCode: 4 })
+    //     if (!!this.error) return this.res.status(UNAUTHORIZED).send(this.error)
+    //     if (this.user.role != role) return this.res.status(UNAUTHORIZED).send({ message: 'You not permission', errorCode: 4 })
 
-        this.req.user = this.user;
-        this.next();
-    }
+    //     this.req.user = this.user;
+    //     this.next();
+    // }
 
     async getInfo() {
         try {
