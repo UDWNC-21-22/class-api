@@ -15,7 +15,7 @@ headers: {
 
 
 ### User register
-`POST` : /user/register
+`POST` /user/register
 
 ```json
 {
@@ -28,7 +28,7 @@ headers: {
 ```
 
 ### User login
-`POST` : /user/login
+`POST` /user/login
 
 ```json
 {
@@ -38,13 +38,13 @@ headers: {
 ```
 
 ### User authenticate
-`GET` : /user/authenticate
+`GET` /user/authenticate
 
 ### Get info teacher
-`GET` : /teacher/:id
+`GET` /teacher/:id
 
 ### Create class
-`POST` : /class/create
+`POST` /class/create
 
 ```json
 {
@@ -55,4 +55,4 @@ headers: {
 ```
 
 ### Get all class of user
-`GET` : /class/me
+`GET` /class/me
