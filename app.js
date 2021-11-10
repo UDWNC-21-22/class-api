@@ -4,6 +4,7 @@ var path = require('path');
 var cookieParser = require('cookie-parser');
 var logger = require('morgan');
 var Connect = require('./src/config/database.js');
+const cors = require('cors')
 var indexRouter = require('./src/routes/index');
 var usersRouter = require('./src/routes/users');
 var teacherRouter = require('./src/routes/teacher');
