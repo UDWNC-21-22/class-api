@@ -7,7 +7,6 @@ var Connect = require('./src/config/database.js');
 const cors = require('cors')
 var indexRouter = require('./src/routes/index');
 var usersRouter = require('./src/routes/users');
-var teacherRouter = require('./src/routes/teacher');
 
 var app = express();
 app.use(cors())
@@ -31,7 +30,6 @@ app.use(express.static(path.join(__dirname, 'public')));
 
 app.use('/', indexRouter);
 app.use('/user', usersRouter);
-app.use('/teacher', teacherRouter)
 
 // catch 404 and forward to error handler
 app.use(function(req, res, next) {

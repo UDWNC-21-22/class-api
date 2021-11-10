@@ -1,6 +1,6 @@
-const {StatusCodes} = require('http-status-codes')
-const {OK, FORBIDDEN, BAD_REQUEST, BAD_GATEWAY} = StatusCodes
-const {validateEmail} = require('../helpers/form.helper')
+const { StatusCodes } = require('http-status-codes')
+const { OK, FORBIDDEN, BAD_REQUEST, BAD_GATEWAY } = StatusCodes
+const { validateEmail } = require('../helpers/form.helper')
 const { User, userModel } = require('../models/user.model')
 const { v1: uuidv1 } = require('uuid');
 const CryptoJS = require("crypto-js");
@@ -20,8 +20,8 @@ const userList = (req, res) => {
             emai: 'email 2'
         }
     ]
-    
-    return res.status(200).send({data})
+
+    return res.status(200).send({ data })
 }
 
 
@@ -41,12 +41,12 @@ const userRegister = async (req, res) => {
     validate.validateEmail()
 
     if (validate.hasError())
-        return res.status(BAD_REQUEST).send({message: "Regsiter failed", errors: validate.errors})
+        return res.status(BAD_REQUEST).send({ message: "Regsiter failed", errors: validate.errors })
 
     // check username exists
-    const userQuery = await userModel.findOne({username: user.username})
+    const userQuery = await userModel.findOne({ username: user.username })
     if (!!userQuery) {
-        return res.status(BAD_REQUEST).send({message: 'Register failed', errors: {username: 'Username already registered'}})
+        return res.status(BAD_REQUEST).send({ message: 'Register failed', errors: { username: 'Username already registered' } })
     }
 
 
@@ -54,13 +54,13 @@ const userRegister = async (req, res) => {
     user.password = CryptoJS.MD5(user.password).toString()
 
     // console.log(user)
-    try{
+    try {
         await userModel.create(user)
-        return res.status(OK).send({message: "Register successfully"})
+        return res.status(OK).send({ message: "Register successfully" })
     }
-    catch(err){
+    catch (err) {
         console.log(err)
-        return res.status(BAD_GATEWAY).send({message: "OOps"})
+        return res.status(BAD_GATEWAY).send({ message: "OOps" })
     }
 
 }
@@ -78,25 +78,25 @@ const userLogin = async (req, res) => {
     let formValidate = new ValidateService(user);
     formValidate.required(['username', 'password'])
     if (formValidate.hasError())
-        return res.status(BAD_REQUEST).send({message: 'Login failed', errors: formValidate.errors})
+        return res.status(BAD_REQUEST).send({ message: 'Login failed', errors: formValidate.errors })
 
-    let userQuery = await userModel.findOne({username: user.username, password: CryptoJS.MD5(user.password).toString()})
+    let userQuery = await userModel.findOne({ username: user.username, password: CryptoJS.MD5(user.password).toString() })
     if (!userQuery)
-        return res.status(BAD_REQUEST).send({message: 'Username or password invalid'})
-    
-    
-    
+        return res.status(BAD_REQUEST).send({ message: 'Username or password invalid' })
+
+
+
     userQuery = new User(userQuery._doc)
     userQuery.access_token = jwtService.generateJwt(userQuery)
     // console.log(userQuery)
 
-    try{
-        await userModel.updateOne({id: userQuery.id}, userQuery)
-        return res.status(OK).send({message: 'Login successfully', data: userQuery})
+    try {
+        await userModel.updateOne({ id: userQuery.id }, userQuery)
+        return res.status(OK).send({ message: 'Login successfully', data: userQuery })
     }
-    catch (err){
+    catch (err) {
         console.log(err);
-        return res.status(BAD_GATEWAY).send({message: "OOps"})
+        return res.status(BAD_GATEWAY).send({ message: "OOps" })
     }
 
 }
@@ -111,17 +111,30 @@ const authenticate = async (req, res) => {
     let accessToken = authorization.split(" ")[1].trim();
     let data = jwtService.verifyJwt(accessToken)
     // console.log(data)
-    
-    if (!data)
-        return res.status(FORBIDDEN).send({message: 'Access token invalid'})
 
-    let user = await userModel.findOne({id: data.id})
+    if (!data)
+        return res.status(FORBIDDEN).send({ message: 'Access token invalid' })
+
+    let user = await userModel.findOne({ id: data.id })
 
     // console.log(user)
 
-    return res.status(OK).send({data: new User(user)})
+    return res.status(OK).send({ data: new User(user) })
 
 }
+
+
+/**
+ * Get info teacher
+ * @param id string
+ */
+const userInfo = async (req, res) => {
+    let userQuery = await userModel.findOne({ id: req.params.id })
+    if (!userQuery)
+        return res.status(BAD_REQUEST).send({ message: 'User not found' })
+    return res.status(OK).send({ data: new User(userQuery) })
+}
+
 
 
 
