@@ -42,3 +42,17 @@ headers: {
 
 ### Get info teacher
 `GET` : /teacher/:id
+
+### Create class
+`POST` : /class/create
+
+```json
+{
+    "name": "class 1",
+    "description": "des 1",
+    "ownerId": "12121212" // id of user
+}
+```
+
+### Get all class of user
+`GET` : /class/me

@@ -37,7 +37,7 @@ const userRegister = async (req, res) => {
     let user = new User(req.body)
 
     let validate = new ValidateService(user)
-    validate.required(['username', 'password', 'email', 'fullname', 'role'])
+    validate.required(['username', 'password', 'email', 'fullname'])
     validate.validateEmail()
 
     if (validate.hasError())
