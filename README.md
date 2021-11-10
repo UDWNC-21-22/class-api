@@ -37,6 +37,12 @@ headers: {
 }
 ```
 
+### User info
+`GET` /user/info
+
+### User logout
+`GET` /user/logout
+
 ### User authenticate
 `GET` /user/authenticate
 
