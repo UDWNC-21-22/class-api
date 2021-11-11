@@ -22,8 +22,7 @@ headers: {
     "username": "khoi_pro",
     "password": "1234567",
     "email": "khoi@gmail.com",
-    "fullname": "Khoi Nguyen",
-    "role": "student"
+    "fullname": "Khoi Nguyen"
 }
 ```
 
@@ -45,9 +44,6 @@ headers: {
 
 ### User authenticate
 `GET` /user/authenticate
-
-### Get info teacher
-`GET` /teacher/:id
 
 ### Create class
 `POST` /class/create
