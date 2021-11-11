@@ -37,7 +37,7 @@ const userRegister = async (req, res) => {
     let user = new User(req.body)
 
     let validate = new ValidateService(user)
-    validate.required(['username', 'password', 'email', 'fullname', 'role'])
+    validate.required(['username', 'password', 'email', 'fullname'])
     validate.validateEmail()
 
     if (validate.hasError())
@@ -125,16 +125,29 @@ const authenticate = async (req, res) => {
 
 
 /**
- * Get info teacher
- * @param id string
+ * Get info user
  */
 const userInfo = async (req, res) => {
-    let userQuery = await userModel.findOne({ id: req.params.id })
-    if (!userQuery)
-        return res.status(BAD_REQUEST).send({ message: 'User not found' })
-    return res.status(OK).send({ data: new User(userQuery) })
+    let user = new User(req.user)
+    let userQuery = await userModel.findOne({id: user.id})
+    if (!userQuery) return res.status(BAD_REQUEST).send({ message: 'User not found' })
+    return res.status(OK).send({ data: new User(req.user) })
 }
 
+/**
+ * User logout
+ */
+const userLogout = async (req, res) => {
+    let user = new User(req.user)
+    try{
+        await userModel.updateOne({id: user.id}, {access_token: ''})
+        return res.status(OK).send({message: 'Logout successfully'})
+    }
+    catch(err){
+        console.log(err)
+        return res.status(BAD_GATEWAY).send({message: 'An error has occurred'})
+    }
+}
 
 
 
@@ -142,5 +155,7 @@ module.exports = {
     userList,
     userRegister,
     userLogin,
-    authenticate
+    authenticate,
+    userInfo,
+    userLogout
 }
