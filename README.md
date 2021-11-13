@@ -58,3 +58,9 @@ headers: {
 
 ### Get all class of user
 `GET` /class/me
+
+### Get class by ID
+`GET` /class/me/id
+
+### Get user info by ID
+`GET` /user/info/id

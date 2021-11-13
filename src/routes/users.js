@@ -12,7 +12,4 @@ router.get('/authenticate', authenticate)
 router.get('/logout', middleware ,userLogout)
 router.get('/info', middleware, userInfo)
 
-
-
-
 module.exports = router;

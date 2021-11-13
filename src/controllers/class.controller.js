@@ -37,7 +37,6 @@ const createClass = async (req, res)=>{
     }
     catch(err){
         return res.status(BAD_REQUEST).send({message: 'Create failed'})
-        
     }
     
 }
@@ -50,11 +49,17 @@ const getClass = async (req, res) => {
     let classOwner = await classModel.find({ownerId: user.id})
 
     return res.status(OK).send({data: {classMember, classOwner}})
-
 }
 
+const getClassByID = async(req,res)=>{   
+    const idClass = req.params.id; 
+    let classroomQuery = await classModel.findOne({id: idClass})
+    if (!classroomQuery) return res.status(BAD_REQUEST).send({ message: 'classroom not found' })
+    return res.status(OK).send({ data: new Class(classroomQuery) })
+}
 
 module.exports = {
     getClass,
-    createClass
+    createClass,
+    getClassByID
 }
