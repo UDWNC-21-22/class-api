@@ -6,7 +6,7 @@ class Class {
         name=null,
         description=null,
         memberId=[],
-        ownerId=null,
+        ownerId=[],
         code=null
     }) {
         this.id = id;
@@ -23,7 +23,7 @@ const classSchema = new mongoose.Schema({
     name: String,
     description: String,
     memberId: [String],
-    ownerId: String,
+    ownerId: [String],
     code: String
 });
 
