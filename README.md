@@ -22,8 +22,7 @@ headers: {
     "username": "khoi_pro",
     "password": "1234567",
     "email": "khoi@gmail.com",
-    "fullname": "Khoi Nguyen",
-    "role": "student"
+    "fullname": "Khoi Nguyen"
 }
 ```
 
@@ -32,7 +31,7 @@ headers: {
 
 ```json
 {
-    "username": "khoi_pro",
+    "username": "khoi",
     "password": "1234567",
 }
 ```
@@ -45,9 +44,6 @@ headers: {
 
 ### User authenticate
 `GET` /user/authenticate
-
-### Get info teacher
-`GET` /teacher/:id
 
 ### Create class
 `POST` /class/create
@@ -62,3 +58,9 @@ headers: {
 
 ### Get all class of user
 `GET` /class/me
+
+### Get class by ID
+`GET` /class/me/id
+
+### Get user info by ID
+`GET` /user/info/id
