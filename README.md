@@ -11,10 +11,11 @@ headers: {
 }
 ```
 
+---
 
+## User
 
-
-### User register
+#### User register
 `POST` /user/register
 
 ```json
@@ -26,7 +27,7 @@ headers: {
 }
 ```
 
-### User login
+#### User login
 `POST` /user/login
 
 ```json
@@ -36,31 +37,51 @@ headers: {
 }
 ```
 
-### User info
+#### User info
 `GET` /user/info
 
-### User logout
+#### User logout
 `GET` /user/logout
 
-### User authenticate
+#### User authenticate
 `GET` /user/authenticate
 
-### Create class
+#### Get user info by ID
+`GET` /user/info/id
+
+---
+
+## Class
+#### Create class
 `POST` /class/create
 
 ```json
 {
     "name": "class 1",
     "description": "des 1",
-    "ownerId": "12121212" // id of user
 }
 ```
 
-### Get all class of user
+#### Update class by ID
+`PUT` /class/update
+```json
+{
+    "classId": "6194dd30-4532-11ec-afd2-f12a0e290957",
+    "name": "class 1 - edit lan 3",
+    "description": "hi"
+}
+```
+
+#### Get all class of user
 `GET` /class/me
 
-### Get class by ID
+#### Get class by ID
 `GET` /class/me/id
 
-### Get user info by ID
-`GET` /user/info/id
+#### Delete class by ID
+`DELETE` /class/delete
+```json
+{
+    "classId": "6194dd30-4532-11ec-afd2-f12a0e290957"
+}
+```

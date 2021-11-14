@@ -1,5 +1,5 @@
 const { StatusCodes } = require('http-status-codes')
-const { OK, FORBIDDEN, BAD_REQUEST, BAD_GATEWAY } = StatusCodes
+const { OK, FORBIDDEN, UNAUTHORIZED, BAD_REQUEST, BAD_GATEWAY } = StatusCodes
 const { Class, classModel } = require('../models/class.model')
 const { v1: uuidv1 } = require('uuid');
 const CryptoJS = require("crypto-js");
@@ -13,8 +13,7 @@ const shortCode = new ShortUniqueId({length: 7})
 
 
 /**
- * Craete class
- * @param ownerId string
+ * Create class
  * @param name string
  * @param description string
  */
@@ -28,13 +27,15 @@ const createClass = async (req, res)=>{
     class_.ownerId = [user.id]
 
     let validate = new ValidateService(class_)
-    validate.required(['name', 'description', 'ownerId'])
+    validate.required(['name', 'description'])
 
     if (validate.hasError())
         return res.status(BAD_REQUEST).send({message: 'Create failed', error: validate.errors})
 
     try{
+        user.classIdOwner.push(class_.id)
         await classModel.create(class_)
+        await userModel.updateOne({id: user.id}, {classIdOwner: user.classIdOwner})
         return res.status(OK).send({message: 'Create successfully'})
     }
     catch(err){
@@ -43,9 +44,77 @@ const createClass = async (req, res)=>{
     
 }
 
+/**
+ * Update class
+ * @param classId string
+ * @param name string
+ * @param description string
+ */
+const updateClass = async (req, res) => {
+    
+    let user = new User(req.user)
+
+    let classUpdate = new Class(req.body)
+    classUpdate.id = req.body.classId
+
+    let validate = new ValidateService(classUpdate)
+    validate.required(['name', 'description', "id"]);
+
+    if (validate.hasError())
+        return res.status(BAD_REQUEST).send({ message: 'Update failed', error: validate.errors })
+
+    try {
+        if (user.classIdOwner.indexOf(classUpdate.id) < 0) 
+            return res.status(FORBIDDEN).send({ message: 'You not permission'})
+        
+        // console.log("classUpdate: ", classUpdate)
+        await classModel.updateOne({id: classUpdate.id}, {
+            name: classUpdate.name,
+            description: classUpdate.description,
+        })
+
+        return res.status(OK).send({ message: 'Update successfully', data: classUpdate })
+       
+    }
+    catch (err) {
+        console.log(err)
+        return res.status(BAD_GATEWAY).send({ message: 'Update failed' })
+    }
+
+}
+
+/**
+ * Delete class by ID
+ * @param classId string
+ */
+const deleteClass = async(req, res)=>{
+    let user = new User(req.user)
+    if (!req.body.classId)
+        return res.status(BAD_REQUEST).send({message: 'Id invalid'})
+    
+    if (user.classIdOwner.indexOf(req.body.classId)<0)
+        return res.status(FORBIDDEN).send({message: 'You not permission'})
+    
+    try{
+        user.classIdOwner = user.classIdOwner.filter(id => id != req.body.classId)
+        await userModel.updateOne({id: user.id}, {classIdOwner: user.classIdOwner})
+        await classModel.deleteOne({id: req.body.classId})
+        return res.status(OK).send({message: 'Delete successfully'})
+    }
+    catch(err) {
+        console.log(err)
+        return res.status(BAD_GATEWAY).send({message: "Delete failed"})
+    }
+
+
+}
+
+
+/**
+ * Get info all my class
+ */
 const getClass = async (req, res) => {
     let user = new User(req.user)
-    user = await userModel.findOne({id: user.id})
 
     let classMemberList = await classModel.find({memberId: { $in: [user.id] } })
     let classOwnerList = await classModel.find({ownerId: user.id})
@@ -88,5 +157,7 @@ const getClassByID = async(req,res)=>{
 module.exports = {
     getClass,
     createClass,
-    getClassByID
+    getClassByID,
+    updateClass,
+    deleteClass
 }
