@@ -36,7 +36,7 @@ const createClass = async (req, res)=>{
         user.classIdOwner.push(class_.id)
         await classModel.create(class_)
         await userModel.updateOne({id: user.id}, {classIdOwner: user.classIdOwner})
-        return res.status(OK).send({message: 'Create successfully'})
+        return res.status(OK).send({message: 'Create successfully', data: class_})
     }
     catch(err){
         return res.status(BAD_REQUEST).send({message: 'Create failed'})
