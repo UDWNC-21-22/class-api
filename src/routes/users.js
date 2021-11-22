@@ -9,7 +9,7 @@ router.get('/', userList);
 router.post('/register', userRegister)
 router.post('/login', userLogin)
 router.post('/changepassword', middleware, changePassword)
-router.post('/changeprifile', middleware, changeProfile)
+router.post('/changeprofile', middleware, changeProfile)
 router.get('/authenticate', authenticate)
 router.get('/logout', middleware ,userLogout)
 router.get('/info', middleware, userInfo)
