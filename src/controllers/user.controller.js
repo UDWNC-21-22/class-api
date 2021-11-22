@@ -153,16 +153,20 @@ const userLogout = async (req, res) => {
  * user change password
  */
 const changePassword = async (req, res) => {
-    let user = new User(req.body)
-
+    let user = new User(req.user);
+    let update = req.body
+    console.log(update);
     let userQuery = await userModel.findOne({id: user.id})
-    if(userQuery.password != CryptoJS.MD5(user.currentPassword).toString()){
-        return res.status(BAD_REQUEST).send({ message: "Current password does not match", errors: validate.errors });
+    if(update.changePassword != update.confirmPassword){
+        return res.status(BAD_REQUEST).send({ message: "Confirm password does not match", errors: "Not match" });
+    }
+    if(userQuery.password != CryptoJS.MD5(update.currentPassword).toString()){
+        return res.status(BAD_REQUEST).send({ message: "Current password does not match", errors: "Not match" });
     }
 
     try{
-        user.changePassword = CryptoJS.MD5(user.changePassword).toString()
-        await userModel.updateOne({id: user.id}, {password: user.changePassword})
+        update.changePassword = CryptoJS.MD5(update.changePassword).toString()
+        await userModel.updateOne({id: user.id}, {password: update.changePassword})
         return res.status(OK).send({message: 'Change profile successfully'})
         
     }
@@ -175,14 +179,16 @@ const changePassword = async (req, res) => {
  * user change profile
  */
 const changeProfile = async (req, res) => {
-    let user = new User(req.body);
-    let validate = new ValidateService(user);
+    let user = new User(req.user)
+    let update = new User(req.body);
+
+    let validate = new ValidateService(update);
     validate.validateEmail();
     if (validate.hasError())
         return res.status(BAD_REQUEST).send({ message: "Change profile failed", errors: validate.errors })
 
     try{
-        await userModel.updateOne({id: user.id}, {fullname: user.fullname, email: user.email})
+        await userModel.updateOne({id: user.id}, {fullname: update.fullname, email: update.email})
         return res.status(OK).send({message: 'Change data successfully'})
     }
     catch(err){
