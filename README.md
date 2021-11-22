@@ -90,7 +90,7 @@ headers: {
 #### Get grade
 `GET` /grade/:classId
 
-### Post grade
+#### Post grade
 ```json
 {
     "classId": "4c81d9f0-47af-11ec-840e-93895d593299",
