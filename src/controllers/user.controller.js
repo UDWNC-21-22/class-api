@@ -153,7 +153,7 @@ const userLogout = async (req, res) => {
  * user change password
  */
 const changePassword = async (req, res) => {
-    let user = new User(req.user)
+    let user = new User(req.body)
 
     let userQuery = await userModel.findOne({id: user.id})
     if(userQuery.password != CryptoJS.MD5(user.currentPassword).toString()){
@@ -175,7 +175,7 @@ const changePassword = async (req, res) => {
  * user change profile
  */
 const changeProfile = async (req, res) => {
-    let user = new User(req.user);
+    let user = new User(req.body);
     let validate = new ValidateService(user);
     validate.validateEmail();
     if (validate.hasError())
