@@ -86,6 +86,21 @@ headers: {
 }
 ```
 
+## Grade
+#### Get grade
+`GET` /grade/:classId
+
+### Post grade
+```json
+{
+    "classId": "4c81d9f0-47af-11ec-840e-93895d593299",
+    "studentId": "4aa6b440-45e1-11ec-a1e0-43425fae68bd",
+    "grade": 10
+}
+```
+
+
+
 #### email
 midtermweb1@gmail.com  
 12@abcdef

@@ -21,7 +21,7 @@ const gradeSchema = new mongoose.Schema({
     grade: String
 });
 
-const gradeModel = mongoose.model('grade', classSchema);
+const gradeModel = mongoose.model('grade', gradeSchema);
 
 module.exports = {
     Grade,
