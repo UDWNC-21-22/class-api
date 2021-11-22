@@ -149,8 +149,40 @@ const userLogout = async (req, res) => {
     }
 }
 
+/**
+ * user change password
+ */
+const changePassword = async (req, res) => {
+    let user = new User(req.user)
+    try{
+        user.password = CryptoJS.MD5(user.password).toString()
+        await userModel.updateOne({id: user.id}, {password: user.password})
+        return res.status(OK).send({message: 'Change profile successfully'})
+        
+    }
+    catch(err){
+        return res.status(BAD_GATEWAY).send({message: 'change password unsuccessed'})
+    }
+}
 
+/**
+ * user change profile
+ */
+const changeProfile = async (req, res) => {
+    let user = new User(req.user);
+    let validate = new ValidateService(user);
+    validate.validateEmail();
+    if (validate.hasError())
+        return res.status(BAD_REQUEST).send({ message: "Change profile failed", errors: validate.errors })
 
+    try{
+        await userModel.updateOne({id: user.id}, {fullname: user.fullname, email: user.email})
+        return res.status(OK).send({message: 'Change data successfully'})
+    }
+    catch(err){
+        return res.status(BAD_GATEWAY).send({message: 'change password unsuccessed'})
+    }
+}
 
 module.exports = {
     userList,
@@ -158,5 +190,7 @@ module.exports = {
     userLogin,
     authenticate,
     userInfo,
-    userLogout
+    userLogout,
+    changePassword,
+    changeProfile,
 }
