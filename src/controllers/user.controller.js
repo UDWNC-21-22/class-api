@@ -154,9 +154,15 @@ const userLogout = async (req, res) => {
  */
 const changePassword = async (req, res) => {
     let user = new User(req.user)
+
+    let userQuery = await userModel.findOne({id: user.id})
+    if(userQuery.password != CryptoJS.MD5(user.currentPassword).toString()){
+        return res.status(BAD_REQUEST).send({ message: "Current password does not match", errors: validate.errors });
+    }
+
     try{
-        user.password = CryptoJS.MD5(user.password).toString()
-        await userModel.updateOne({id: user.id}, {password: user.password})
+        user.changePassword = CryptoJS.MD5(user.changePassword).toString()
+        await userModel.updateOne({id: user.id}, {password: user.changePassword})
         return res.status(OK).send({message: 'Change profile successfully'})
         
     }
