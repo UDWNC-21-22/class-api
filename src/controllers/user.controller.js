@@ -74,7 +74,6 @@ const userRegister = async (req, res) => {
 
 const userLogin = async (req, res) => {
     let user = new User(req.body);
-    // console.log(user)
     let formValidate = new ValidateService(user);
     formValidate.required(['username', 'password'])
     if (formValidate.hasError())
@@ -196,6 +195,43 @@ const changeProfile = async (req, res) => {
     }
 }
 
+/**
+ * user login by google
+ */
+
+const googleLogin = async (req, res) => {
+    console.log('header', req.headers);
+    const userLogin = req.body;
+    const userQuery = await userModel.findOne({username: userLogin.email});
+    if(!userQuery){
+        const user = new User({username: userLogin.email, email: userLogin.email, fullname: userLogin.fullname, access_token: userLogin.access_token})
+        user.id = uuidv1();
+
+        // console.log(user)
+        try {
+            user.access_token = jwtService.generateJwt(user)
+            await userModel.create(user)
+            return res.status(OK).send({ message: 'Login successfully', data: userLogin })
+        }
+        catch (err) {
+            console.log(err)
+            return res.status(BAD_GATEWAY).send({ message: "OOps" })
+        }
+    
+    }
+
+    try {
+        userQuery.access_token = jwtService.generateJwt(userQuery)
+        await userModel.updateOne({ id: userQuery.id }, {access_token: userQuery.access_token})
+        return res.status(OK).send({ message: 'Login successfully', data: userQuery })
+    }
+    catch (err) {
+        console.log(err);
+        return res.status(BAD_GATEWAY).send({ message: "OOps" })
+    }
+
+}
+
 module.exports = {
     userList,
     userRegister,
@@ -205,4 +241,5 @@ module.exports = {
     userLogout,
     changePassword,
     changeProfile,
+    googleLogin
 }

@@ -6,6 +6,7 @@ const ShortUniqueId = require('short-unique-id');
 const { gradeModel, Grade } = require('../models/grade.model');
 const { User } = require('../models/user.model');
 const { isOwnerClass, isMemberClass} = require('../helpers/class.helper');
+const { classModel } = require('../models/class.model');
 
 
 /**
@@ -25,6 +26,23 @@ const getGradeByClass = async (req, res) => {
     return res.status(OK).send({data: grades})
 
 } 
+
+const getGradeByUser = async (req, res) => {
+    const user = new User(req.user);
+    const userClasses = await gradeModel.find({studentId: user.id});
+    var className = [];
+
+    for(let i = 0; i<userClasses.length; i++){
+        const c = await classModel.find({id: userClasses[i].classId});
+        console.log('lop', c);
+        className.push({
+            class: c.name,
+            grade: userClasses[i].grade
+        })
+    }
+
+    return res.status(OK).send({data: className})
+}
 
 /**
  * Create/Update grade student of class by ID
@@ -73,5 +91,6 @@ const postGrade = async (req, res) => {
 
 module.exports = {
     postGrade,
-    getGradeByClass
+    getGradeByClass,
+    getGradeByUser,
 }
