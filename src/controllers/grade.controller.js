@@ -4,9 +4,10 @@ const { v1: uuidv1 } = require('uuid');
 const ValidateService = require('../services/validate.service')
 const ShortUniqueId = require('short-unique-id');
 const { gradeModel, Grade } = require('../models/grade.model');
-const { User } = require('../models/user.model');
+const { User, userModel } = require('../models/user.model');
 const { isOwnerClass, isMemberClass} = require('../helpers/class.helper');
 const { classModel } = require('../models/class.model');
+const { GradeDTO, MemberGradeDTO, ClassGradeDTO } = require('../models/gradeDTO.model');
 
 
 /**
@@ -29,24 +30,44 @@ const getGradeByClass = async (req, res) => {
 
 const getGradeByUser = async (req, res) => {
     const user = new User(req.user);
-    const userClasses = await gradeModel.find({studentId: user.id});
-    var className = [];
+    const userGrades = await gradeModel.find({memberId: user.id});
+    var grades = []
 
-    for(let i = 0; i<userClasses.length; i++){
-        const c = await classModel.find({id: userClasses[i].classId});
-        console.log('lop', c);
-        className.push({
-            class: c.name,
-            grade: userClasses[i].grade
-        })
-    }
+    // console.log(userClasses)
 
-    return res.status(OK).send({data: className})
+    // for(let i = 0; i<userClasses.length; i++){
+    //     const c = await classModel.find({id: userClasses[i].classId});
+    //     console.log('lop', c);
+    //     className.push({
+    //         class: c.name,
+    //         grade: userClasses[i].grade
+    //     })
+    // }
+
+    grades = await Promise.all(userGrades.map(async g=>{
+        let gradeDTO = new GradeDTO({})
+        gradeDTO.id = g.id;
+        
+        gradeDTO.member = await userModel.findOne({id: g.memberId})
+        gradeDTO.member = new MemberGradeDTO(gradeDTO.member._doc)
+
+        gradeDTO.classes = await classModel.findOne({id: g.classId})
+        gradeDTO.classes = new ClassGradeDTO(gradeDTO.classes._doc)
+
+        gradeDTO.grade = g.grade
+        return gradeDTO
+    }))
+
+    console.log(grades)
+
+
+
+    return res.status(OK).send({data: grades})
 }
 
 /**
  * Create/Update grade student of class by ID
- * @param studentId string
+ * @param memberId string
  * @param classId string
  * @param grade number
  */
@@ -55,7 +76,7 @@ const postGrade = async (req, res) => {
     let gradeStudent = new Grade(req.body);
 
     let gradeValidate = new ValidateService(gradeStudent)
-    gradeValidate.required(['studentId', 'classId', 'grade'])
+    gradeValidate.required(['memberId', 'classId', 'grade'])
 
     if (gradeValidate.hasError())
         return res.status(BAD_REQUEST).send({ message: "Post grade failed", errors: gradeValidate.errors})
@@ -65,7 +86,7 @@ const postGrade = async (req, res) => {
     }
 
     try{
-        let gradeQuery = await gradeModel.findOne({studentId: gradeStudent.studentId, classId: gradeStudent.classId})
+        let gradeQuery = await gradeModel.findOne({memberId: gradeStudent.memberId, classId: gradeStudent.classId})
         if (!gradeQuery) {
             // create grade
             console.log("create grade")
@@ -76,7 +97,7 @@ const postGrade = async (req, res) => {
             // update grade
             console.log("update grade")
             gradeStudent.id = gradeQuery.id
-            await gradeModel.updateOne({studentId: gradeStudent.studentId, classId: gradeStudent.classId}, gradeStudent)
+            await gradeModel.updateOne({memberId: gradeStudent.memberId, classId: gradeStudent.classId}, gradeStudent)
         }
 
         return res.status(OK).send({message: 'Post grade successfully'})
