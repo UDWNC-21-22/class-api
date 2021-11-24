@@ -174,7 +174,7 @@ const inviteClass = async (req, res) => {
     let dataValidate = new ValidateService(data)
     dataValidate.required(['email', 'classId', 'role'])
 
-    console.log(data)
+    // console.log(data)
     if (data.role != "owner" && data.role != "member")
         return res.status(OK).send({message: 'Role must a OWNER or MEMBER'})
 
@@ -182,12 +182,24 @@ const inviteClass = async (req, res) => {
     if (!!userQuery) data.userId = userQuery.id;
 
     const inviteToken = jwtService.generateJwt(data)
-    const contentInvite = `Link invite: http://middleclass/confirm-invite/${inviteToken}`
+    const contentInvite = `Link invite: https://midtermclass.herokuapp.com/confirm-invite${inviteToken}`
+
+    let classes = await classModel.findOne({id: data.classId})
+    classes = new Class(classes._doc)
+    classes.inviteToken.push(inviteToken)
+    await classModel.updateOne({id: classes.id}, {inviteToken: classes.inviteToken})
 
     await sendEmail({email: data.email, content: contentInvite})
 
     return res.status(OK).send({message: "Sent link invite to email"})
 }
+
+
+// const verifyInviteClass = async (req, res)=>{
+
+//     let inviteToken = await 
+
+// }
 
 module.exports = {
     getClass,
