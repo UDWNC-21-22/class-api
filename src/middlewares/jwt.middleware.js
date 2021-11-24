@@ -10,10 +10,12 @@ const middleware = async (req, res, next)=>{
         let authorization = req.headers.authorization;
         let accessToken = authorization.split(" ")[1].trim();
         let data = jwtService.verifyJwt(accessToken);
+    
         if (!data)
             return res.status(UNAUTHORIZED).send({ message: 'Access token invalid', errorCode: 1 })
 
         let user = await userModel.findOne({ id: data.id });
+     
         if (!user)
             return res.status(UNKNOWN_USER).send({ message: 'Access token do not match', errorCode: 2 })
 

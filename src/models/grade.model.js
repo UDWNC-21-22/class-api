@@ -3,12 +3,12 @@ const mongoose = require('mongoose');
 class Grade {
     constructor({
         id=null,
-        studentId=null,
+        memberId=null,
         classId=null,
         grade=null,
     }) {
         this.id = id;
-        this.studentId = studentId;
+        this.memberId = memberId;
         this.classId = classId;
         this.grade = grade;
     }
@@ -16,7 +16,7 @@ class Grade {
 
 const gradeSchema = new mongoose.Schema({
     id: String,
-    studentId: String,
+    memberId: String,
     classId: String,
     grade: String
 });

@@ -86,16 +86,28 @@ headers: {
 }
 ```
 
+#### Invite user join to class
+`POST` /class/invite
+```json
+{
+    "classId": "6194dd30-4532-11ec-afd2-f12a0e290957",
+    "email": "test@gmail.com",
+    "role": "member"
+}
+```
+
+
 ## Grade
 #### Get grade
 `GET` /grade/:classId
 
 ### Post grade
 `POST` /grade/post
+#### Post grade
 ```json
 {
     "classId": "4c81d9f0-47af-11ec-840e-93895d593299",
-    "studentId": "4aa6b440-45e1-11ec-a1e0-43425fae68bd",
+    "memberId": "4aa6b440-45e1-11ec-a1e0-43425fae68bd",
     "grade": 10
 }
 ```

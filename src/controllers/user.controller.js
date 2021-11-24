@@ -74,7 +74,6 @@ const userRegister = async (req, res) => {
 
 const userLogin = async (req, res) => {
     let user = new User(req.body);
-    // console.log(user)
     let formValidate = new ValidateService(user);
     formValidate.required(['username', 'password'])
     if (formValidate.hasError())
@@ -153,16 +152,20 @@ const userLogout = async (req, res) => {
  * user change password
  */
 const changePassword = async (req, res) => {
-    let user = new User(req.body)
-
+    let user = new User(req.user);
+    let update = req.body
+    console.log(update);
     let userQuery = await userModel.findOne({id: user.id})
-    if(userQuery.password != CryptoJS.MD5(user.currentPassword).toString()){
-        return res.status(BAD_REQUEST).send({ message: "Current password does not match", errors: validate.errors });
+    if(update.changePassword != update.confirmPassword){
+        return res.status(BAD_REQUEST).send({ message: "Confirm password does not match", errors: "Not match" });
+    }
+    if(userQuery.password != CryptoJS.MD5(update.currentPassword).toString()){
+        return res.status(BAD_REQUEST).send({ message: "Current password does not match", errors: "Not match" });
     }
 
     try{
-        user.changePassword = CryptoJS.MD5(user.changePassword).toString()
-        await userModel.updateOne({id: user.id}, {password: user.changePassword})
+        update.changePassword = CryptoJS.MD5(update.changePassword).toString()
+        await userModel.updateOne({id: user.id}, {password: update.changePassword})
         return res.status(OK).send({message: 'Change profile successfully'})
         
     }
@@ -175,19 +178,58 @@ const changePassword = async (req, res) => {
  * user change profile
  */
 const changeProfile = async (req, res) => {
-    let user = new User(req.body);
-    let validate = new ValidateService(user);
+    let user = new User(req.user)
+    let update = new User(req.body);
+
+    let validate = new ValidateService(update);
     validate.validateEmail();
     if (validate.hasError())
         return res.status(BAD_REQUEST).send({ message: "Change profile failed", errors: validate.errors })
 
     try{
-        await userModel.updateOne({id: user.id}, {fullname: user.fullname, email: user.email})
+        await userModel.updateOne({id: user.id}, {fullname: update.fullname, email: update.email})
         return res.status(OK).send({message: 'Change data successfully'})
     }
     catch(err){
         return res.status(BAD_GATEWAY).send({message: 'change password unsuccessed'})
     }
+}
+
+/**
+ * user login by google
+ */
+
+const googleLogin = async (req, res) => {
+    console.log('header', req.headers);
+    const userLogin = req.body;
+    const userQuery = await userModel.findOne({username: userLogin.email});
+    if(!userQuery){
+        const user = new User({username: userLogin.email, email: userLogin.email, fullname: userLogin.fullname, access_token: userLogin.access_token})
+        user.id = uuidv1();
+
+        // console.log(user)
+        try {
+            user.access_token = jwtService.generateJwt(user)
+            await userModel.create(user)
+            return res.status(OK).send({ message: 'Login successfully', data: userLogin })
+        }
+        catch (err) {
+            console.log(err)
+            return res.status(BAD_GATEWAY).send({ message: "OOps" })
+        }
+    
+    }
+
+    try {
+        userQuery.access_token = jwtService.generateJwt(userQuery)
+        await userModel.updateOne({ id: userQuery.id }, {access_token: userQuery.access_token})
+        return res.status(OK).send({ message: 'Login successfully', data: userQuery })
+    }
+    catch (err) {
+        console.log(err);
+        return res.status(BAD_GATEWAY).send({ message: "OOps" })
+    }
+
 }
 
 module.exports = {
@@ -199,4 +241,5 @@ module.exports = {
     userLogout,
     changePassword,
     changeProfile,
+    googleLogin
 }
