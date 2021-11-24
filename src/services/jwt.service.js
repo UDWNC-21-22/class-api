@@ -19,6 +19,19 @@ module.exports = class JwtService {
           }, process.env.JWT_SIGNING_KEY, { expiresIn: '7d' });
     }
 
+    generateInviteToken(obj){
+        const payload = JSON.stringify({
+            userId: obj.userId,
+            classId: obj.classId,
+            role: obj.role,
+            email: obj.email
+        });
+
+        return jwt.sign({
+            data: payload
+          }, process.env.JWT_SIGNING_KEY, { expiresIn: '7d' });
+    }
+
     verifyJwt(token){
         let result;
 

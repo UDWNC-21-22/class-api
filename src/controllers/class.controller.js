@@ -181,8 +181,9 @@ const inviteClass = async (req, res) => {
     let userQuery = await userModel.findOne({email: data.email})
     if (!!userQuery) data.userId = userQuery.id;
 
-    const inviteToken = jwtService.generateJwt(data)
-    const contentInvite = `Link invite: https://midtermclass.herokuapp.com/confirm-invite${inviteToken}`
+    console.log(data)
+    const inviteToken = jwtService.generateInviteToken(data)
+    const contentInvite = `Link invite: https://midtermclass.herokuapp.com/confirm-invite/${inviteToken}`
 
     let classes = await classModel.findOne({id: data.classId})
     classes = new Class(classes._doc)
@@ -195,11 +196,37 @@ const inviteClass = async (req, res) => {
 }
 
 
-// const verifyInviteClass = async (req, res)=>{
 
-//     let inviteToken = await 
+/**
+ * Verify invite token join class
+ * @param inviteToken string
+ */
+const verifyInviteClass = async (req, res)=>{
 
-// }
+    let inviteToken = req.body.inviteToken;
+    let data = jwtService.verifyJwt(inviteToken)
+    console.log("data invite token: ", data)
+    if (!data)
+        return res.status(UNAUTHORIZED).send({message: "Invite token invalid"})
+    
+    let userQuery = await userModel.findOne({email: data.email})
+    if (!userQuery)
+        return res.status(BAD_REQUEST).send({message: "Verify invite token failed", errors: {email: ['Email is not register account']}})
+
+    let classes = await classModel.findOne({id: data.classId})
+    classes = new Class(classes._doc)
+
+    if (classes.inviteToken.indexOf(inviteToken) < 0)
+        return res.status(BAD_REQUEST).send({message: "User join class failed", errors: {inviteToken: ['Invite token not exists']}})
+
+    classes.inviteToken = classes.inviteToken.filter(token => token != inviteToken)
+    classes.memberId = classes.memberId.push(userQuery.id)
+
+    await classModel.updateOne({id: classes.id}, {memberId: classes.memberId, inviteToken: classes.inviteToken})
+
+    return res.status(OK).send({message: "User join class successfully"})
+
+}
 
 module.exports = {
     getClass,
@@ -208,4 +235,5 @@ module.exports = {
     updateClass,
     deleteClass,
     inviteClass,
+    verifyInviteClass
 }
