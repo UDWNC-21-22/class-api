@@ -9,6 +9,7 @@ const jwtService = new JwtService()
 const ShortUniqueId = require('short-unique-id');
 const { User, userModel } = require('../models/user.model');
 const { ClassDTO, MemberDTO } = require('../models/classDTO.model');
+const { sendEmail } = require('../helpers/class.helper');
 const shortCode = new ShortUniqueId({length: 7})
 
 
@@ -154,10 +155,45 @@ const getClassByID = async(req,res)=>{
     return res.status(OK).send({ data: new Class(classroomQuery) })
 }
 
+
+/**
+ * Invite user join to class
+ * @param email string
+ * @param classId string
+ * @param role string
+ */
+const inviteClass = async (req, res) => {
+
+    let data = {
+        email: req.body.email,
+        classId: req.body.classId,
+        role: req.body.role,
+        userId: null
+    }
+
+    let dataValidate = new ValidateService(data)
+    dataValidate.required(['email', 'classId', 'role'])
+
+    console.log(data)
+    if (data.role != "owner" && data.role != "member")
+        return res.status(OK).send({message: 'Role must a OWNER or MEMBER'})
+
+    let userQuery = await userModel.findOne({email: data.email})
+    if (!!userQuery) data.userId = userQuery.id;
+
+    const inviteToken = jwtService.generateJwt(data)
+    const contentInvite = `Link invite: http://middleclass/confirm-invite/${inviteToken}`
+
+    await sendEmail({email: data.email, content: contentInvite})
+
+    return res.status(OK).send({message: "Sent link invite to email"})
+}
+
 module.exports = {
     getClass,
     createClass,
     getClassByID,
     updateClass,
-    deleteClass
+    deleteClass,
+    inviteClass,
 }

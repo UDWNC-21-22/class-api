@@ -7,7 +7,8 @@ class Class {
         description=null,
         memberId=[],
         ownerId=[],
-        code=null
+        code=null,
+        inviteToken=[]
     }) {
         this.id = id;
         this.name = name;
@@ -15,6 +16,7 @@ class Class {
         this.memberId = memberId;
         this.ownerId = ownerId;
         this.code = code;
+        this.inviteToken = inviteToken;
     }
 }
 
@@ -24,7 +26,8 @@ const classSchema = new mongoose.Schema({
     description: String,
     memberId: [String],
     ownerId: [String],
-    code: String
+    code: String,
+    inviteToken: [String]
 });
 
 const classModel = mongoose.model('class', classSchema);

@@ -5,7 +5,8 @@ const {
     createClass, 
     getClassByID, 
     updateClass,
-    deleteClass
+    deleteClass,
+    inviteClass
 } = require('../controllers/class.controller');
 const {middleware} = require('../middlewares/jwt.middleware')
 
@@ -16,5 +17,6 @@ router.post('/create', createClass)
 router.get('/me/:id',getClassByID)
 router.put('/update', updateClass)
 router.delete('/delete', deleteClass)
+router.post('/invite', inviteClass)
 
 module.exports = router;
