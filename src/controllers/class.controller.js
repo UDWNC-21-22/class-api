@@ -220,7 +220,13 @@ const verifyInviteClass = async (req, res)=>{
         return res.status(BAD_REQUEST).send({message: "User join class failed", errors: {inviteToken: ['Invite token not exists']}})
 
     classes.inviteToken = classes.inviteToken.filter(token => token != inviteToken)
-    classes.memberId = classes.memberId.push(userQuery.id)
+
+    if (data.role == "member")
+        classes.memberId = classes.memberId.push(userQuery.id)
+    else if (data.role == "owner")
+        classes.ownerId = classes.ownerId.push(userQuery.id)
+
+    console.log(classes)
 
     await classModel.updateOne({id: classes.id}, {memberId: classes.memberId, inviteToken: classes.inviteToken})
 
