@@ -96,6 +96,14 @@ headers: {
 }
 ```
 
+#### Verify invite token
+`POST` /class/invite/verify
+```json
+{
+    "inviteToken": "...",
+}
+```
+
 
 ## Grade
 #### Get grade
