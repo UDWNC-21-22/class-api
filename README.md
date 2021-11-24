@@ -101,6 +101,8 @@ headers: {
 #### Get grade
 `GET` /grade/:classId
 
+### Post grade
+`POST` /grade/post
 #### Post grade
 ```json
 {
