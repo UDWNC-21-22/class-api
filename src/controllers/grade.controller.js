@@ -22,7 +22,21 @@ const getGradeByClass = async (req, res) => {
         return res.status(UNAUTHORIZED).send({message:"You not permission"})
     }
 
-    let grades = await gradeModel.find({classId})
+    var grades = await gradeModel.find({classId})
+
+    grades = await Promise.all(grades.map(async g=>{
+        let gradeDTO = new GradeDTO({})
+        gradeDTO.id = g.id;
+        
+        gradeDTO.member = await userModel.findOne({id: g.memberId})
+        gradeDTO.member = new MemberGradeDTO(gradeDTO.member._doc)
+
+        gradeDTO.classes = await classModel.findOne({id: g.classId})
+        gradeDTO.classes = new ClassGradeDTO(gradeDTO.classes._doc)
+
+        gradeDTO.grade = g.grade
+        return gradeDTO
+    }))
 
     return res.status(OK).send({data: grades})
 
