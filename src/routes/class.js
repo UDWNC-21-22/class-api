@@ -7,7 +7,8 @@ const {
     updateClass,
     deleteClass,
     inviteClass,
-    verifyInviteClass
+    verifyInviteClass,
+    joinClass
 } = require('../controllers/class.controller');
 const {middleware} = require('../middlewares/jwt.middleware')
 
@@ -21,6 +22,7 @@ router.get('/me/:id',getClassByID)
 router.put('/update', updateClass)
 router.delete('/delete', deleteClass)
 router.post('/invite', inviteClass)
+router.post('/join', joinClass)
 
 
 module.exports = router;

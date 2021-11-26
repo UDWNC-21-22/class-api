@@ -225,13 +225,35 @@ const verifyInviteClass = async (req, res)=>{
     if (data.role == "member")
         classes.memberId = [...classes.memberId, userQuery.id]
     else if (data.role == "owner")
-        classes.ownerId = classes.ownerId.push(userQuery.id)
+        classes.ownerId = [...classes.ownerId, userQuery.id]
 
     // console.log(classes)
 
     await classModel.updateOne({id: classes.id}, {memberId: classes.memberId, inviteToken: classes.inviteToken})
 
     return res.status(OK).send({message: "User join class successfully"})
+
+}
+
+const joinClass = async (req, res)=>{
+    const user = new User(req.user)
+    const {code} = req.query;
+
+    let class_ = await classModel.findOne({code})
+    if (!class_) 
+        return res.status(BAD_REQUEST).send({message: "Code is not exists"})
+
+    // check user is exists in class
+    class_ = new Class(class_._doc)
+    let isExists = class_.memberId.filter(id => id == user.id)
+    if (isExists.length > 0) {
+        return res.status(OK).send({message: "User already exists in class"})
+    }
+    else{
+        class_.memberId = [...class_.memberId, user.id]
+        await classModel.updateOne({id: class_.id}, {memberId: class_.memberId})
+        return res.status(OK).send({message: "User join class successfully"})
+    }
 
 }
 
@@ -242,5 +264,6 @@ module.exports = {
     updateClass,
     deleteClass,
     inviteClass,
-    verifyInviteClass
+    verifyInviteClass,
+    joinClass
 }

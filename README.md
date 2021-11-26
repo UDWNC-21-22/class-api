@@ -104,6 +104,9 @@ headers: {
 }
 ```
 
+#### Join class by link code
+`POST` /class/join?code=
+
 
 ## Grade
 #### Get grade
