@@ -9,7 +9,7 @@ const jwtService = new JwtService()
 const ShortUniqueId = require('short-unique-id');
 const { User, userModel } = require('../models/user.model');
 const { ClassDTO, MemberDTO } = require('../models/classDTO.model');
-const { sendEmail } = require('../helpers/class.helper');
+const { sendEmail, isMemberClass, isOwnerClass } = require('../helpers/class.helper');
 const shortCode = new ShortUniqueId({length: 7})
 
 
@@ -245,8 +245,8 @@ const joinClass = async (req, res)=>{
 
     // check user is exists in class
     class_ = new Class(class_._doc)
-    let isExists = class_.memberId.filter(id => id == user.id)
-    if (isExists.length > 0) {
+    
+    if (!isMemberClass(user.id, class_.id) || !isOwnerClass(user.id, class_.id)) {
         return res.status(OK).send({message: "User already exists in class"})
     }
     else{

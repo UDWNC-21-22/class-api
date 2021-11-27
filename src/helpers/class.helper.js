@@ -16,9 +16,9 @@ const isMemberClass = async (userId, classId) => {
     let myClass = await classModel.findOne({ id: classId });
 
     if (!myClass || myClass.ownerId.indexOf(userId) < 0) {
-        return false
+        return false // not exists
     }
-    else return true
+    else return true // exists
 }
 
 const sendEmail = async ({email, content}) => {
