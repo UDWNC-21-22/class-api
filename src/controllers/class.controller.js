@@ -270,8 +270,11 @@ const updateAssignment = async (req, res) => {
     }
 
     data.assignments = data.assignments.map(ass => new Assignment(ass))
+    let class_ = await classModel.findOne({id: data.classId})
+    let classObj = new Class(class_._doc)
+    classObj.assignments = data.assignments
 
-    await classModel.updateOne({id: data.classId}, {assignments: data.assignments})
+    await classModel.updateOne({id: data.classId}, classObj)
 
     return res.status(OK).send({message: "Update assignment successfully"})
 
