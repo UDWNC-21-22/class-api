@@ -8,7 +8,8 @@ class Class {
         memberId=[],
         ownerId=[],
         code=null,
-        inviteToken=[]
+        inviteToken=[],
+        assignments=[],
     }) {
         this.id = id;
         this.name = name;
@@ -17,6 +18,7 @@ class Class {
         this.ownerId = ownerId;
         this.code = code;
         this.inviteToken = inviteToken;
+        this.assignments = assignments;
     }
 }
 

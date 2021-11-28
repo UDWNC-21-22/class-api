@@ -107,6 +107,25 @@ headers: {
 #### Join class by link code
 `POST` /class/join?code=
 
+#### Update assignment
+`POST` /class/update-assignment
+```json
+{
+    "classId": "...",
+    "assignments": [
+        {
+            "name": "ass 1",
+            "index": 0,
+            "scoreRate": 7
+        },
+        {
+            "name": "ass 2",
+            "index": 1,
+            "scoreRate": 3
+        }
+    ]
+}
+```
 
 ## Grade
 #### Get grade

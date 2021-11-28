@@ -10,6 +10,7 @@ const ShortUniqueId = require('short-unique-id');
 const { User, userModel } = require('../models/user.model');
 const { ClassDTO, MemberDTO } = require('../models/classDTO.model');
 const { sendEmail, isMemberClass, isOwnerClass } = require('../helpers/class.helper');
+const { Assignment } = require('../models/assignment.model');
 const shortCode = new ShortUniqueId({length: 7})
 
 
@@ -257,6 +258,25 @@ const joinClass = async (req, res)=>{
 
 }
 
+const updateAssignment = async (req, res) => {
+    let user = new User(req.user)
+    const data = {
+        classId: req.body.classId,
+        assignments: req.body.assignments
+    }
+
+    if (!isOwnerClass(user.id, data.classId)){
+        return res.status(UNAUTHORIZED).send({message: "You not permission"})
+    }
+
+    data.assignments = data.assignments.map(ass => new Assignment(ass))
+
+    await classModel.updateOne({id: data.classId}, {assignments: data.assignments})
+
+    return res.status(OK).send({message: "Update assignment successfully"})
+
+}
+
 module.exports = {
     getClass,
     createClass,
@@ -265,5 +285,6 @@ module.exports = {
     deleteClass,
     inviteClass,
     verifyInviteClass,
-    joinClass
+    joinClass,
+    updateAssignment
 }

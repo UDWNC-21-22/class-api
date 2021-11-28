@@ -23,6 +23,7 @@ router.put('/update', updateClass)
 router.delete('/delete', deleteClass)
 router.post('/invite', inviteClass)
 router.post('/join', joinClass)
+router.post('/update-assignment', updateAssignment)
 
 
 module.exports = router;
