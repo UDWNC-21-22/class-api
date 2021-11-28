@@ -12,6 +12,6 @@ class Assignment{
     }
 }
 
-export {
+module.exports = {
     Assignment
 }

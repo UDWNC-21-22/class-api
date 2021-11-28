@@ -265,6 +265,12 @@ const updateAssignment = async (req, res) => {
         assignments: req.body.assignments
     }
 
+    let dataValidate = new ValidateService(data)
+    dataValidate.required(['classId', 'assignments'])
+
+    if (dataValidate.hasError())
+        return res.status(BAD_REQUEST).send({message: "Update assignment failed", error: dataValidate.errors})
+
     if (!isOwnerClass(user.id, data.classId)){
         return res.status(UNAUTHORIZED).send({message: "You not permission"})
     }
@@ -273,6 +279,8 @@ const updateAssignment = async (req, res) => {
     let class_ = await classModel.findOne({id: data.classId})
     let classObj = new Class(class_._doc)
     classObj.assignments = data.assignments
+
+    // console.log(classObj)
 
     await classModel.updateOne({id: data.classId}, classObj)
 

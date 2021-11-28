@@ -8,7 +8,8 @@ const {
     deleteClass,
     inviteClass,
     verifyInviteClass,
-    joinClass
+    joinClass,
+    updateAssignment
 } = require('../controllers/class.controller');
 const {middleware} = require('../middlewares/jwt.middleware')
 

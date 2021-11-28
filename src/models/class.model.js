@@ -29,7 +29,13 @@ const classSchema = new mongoose.Schema({
     memberId: [String],
     ownerId: [String],
     code: String,
-    inviteToken: [String]
+    inviteToken: [String],
+    assignments: [{
+        id: String,
+        name: String,
+        index: Number,
+        scoreRate: Number
+    }]
 });
 
 const classModel = mongoose.model('class', classSchema);

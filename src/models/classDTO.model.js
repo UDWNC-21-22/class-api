@@ -5,7 +5,8 @@ class ClassDTO {
         description=null,
         member=[],
         owner=[],
-        code=null
+        code=null,
+        assignments=[]
     }) {
         this.id = id;
         this.name = name;
@@ -13,6 +14,7 @@ class ClassDTO {
         this.member = member;
         this.owner = owner;
         this.code = code;
+        this.assignments = assignments;
     }
 }
 
