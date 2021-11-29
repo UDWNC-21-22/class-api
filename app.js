@@ -11,7 +11,6 @@ const classRouter = require('./src/routes/class');
 const gradeRouter = require('./src/routes/grade');
 
 var app = express();
-app.use(cors())
 
 Connect()
     .then(() => console.log("connect db success"))
@@ -19,12 +18,13 @@ Connect()
 Promise = global.Promise;
 
 // view engine setup
+app.use(cors())
 app.set('views', path.join(__dirname, 'views'));
 app.set('view engine', 'ejs');
 
 app.use(logger('dev'));
 app.use(express.json());
-app.use(express.urlencoded({ extended: false }));
+app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
 
