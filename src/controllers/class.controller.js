@@ -153,7 +153,7 @@ const getClassByID = async(req,res)=>{
     const idClass = req.params.id; 
     let classroomQuery = await classModel.findOne({id: idClass})
     if (!classroomQuery) return res.status(BAD_REQUEST).send({ message: 'classroom not found' })
-    return res.status(OK).send({ data: new Class(classroomQuery) })
+    return res.status(OK).send({message: 'Get class successfully', data: new Class(classroomQuery) })
 }
 
 
