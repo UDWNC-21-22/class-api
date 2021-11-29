@@ -115,11 +115,13 @@ headers: {
     "assignments": [
         {
             "name": "ass 1",
+            "description": "desc 1",
             "index": 0,
             "scoreRate": 7
         },
         {
             "name": "ass 2",
+            "description": "desc 2",
             "index": 1,
             "scoreRate": 3
         }

@@ -33,6 +33,7 @@ const classSchema = new mongoose.Schema({
     assignments: [{
         id: String,
         name: String,
+        description: String,
         index: Number,
         scoreRate: Number
     }]
