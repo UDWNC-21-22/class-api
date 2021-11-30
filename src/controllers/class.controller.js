@@ -12,6 +12,8 @@ const { ClassDTO, MemberDTO } = require('../models/classDTO.model');
 const { sendEmail, isMemberClass, isOwnerClass } = require('../helpers/class.helper');
 const { Assignment } = require('../models/assignment.model');
 const shortCode = new ShortUniqueId({length: 7})
+const config = require('dotenv');
+config.config();
 
 
 /**
@@ -182,9 +184,10 @@ const inviteClass = async (req, res) => {
     let userQuery = await userModel.findOne({email: data.email})
     if (!!userQuery) data.userId = userQuery.id;
 
-    console.log(data)
+    console.log(process.env.NODE_ENV)
     const inviteToken = jwtService.generateInviteToken(data)
-    const contentInvite = `Link invite: https://midtermclass.herokuapp.com/confirm-invite/${inviteToken}`
+    const env = process.env.NODE_ENV || 'dev'
+    const contentInvite = 'Link invite:' + `${env == 'dev'? process.env.HOST_DEV:process.env.HOST_PRO}`+ '/confirm-invite/' +`${inviteToken}`
 
     let classes = await classModel.findOne({id: data.classId})
     classes = new Class(classes._doc)
