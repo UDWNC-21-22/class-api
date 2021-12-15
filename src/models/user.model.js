@@ -10,6 +10,7 @@ class User {
         classIdOwner=[],
         classIdMember=[],
         access_token=null,
+        studentId=null
     }) {
         this.id = id;
         this.username = username;
@@ -19,6 +20,7 @@ class User {
         this.classIdMember = classIdMember;
         this.classIdOwner = classIdOwner;
         this.access_token = access_token;
+        this.studentId = studentId
     }
 }
 
@@ -31,6 +33,7 @@ const userSchema = new mongoose.Schema({
     classIdOwner: [String],
     classIdMember: [String],
     access_token: String,
+    studentId: String,
 });
 
 const userModel = mongoose.model('user', userSchema);

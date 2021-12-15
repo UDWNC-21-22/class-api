@@ -13,6 +13,7 @@ const { sendEmail, isMemberClass, isOwnerClass } = require('../helpers/class.hel
 const { Assignment } = require('../models/assignment.model');
 const shortCode = new ShortUniqueId({length: 7})
 const config = require('dotenv');
+const {writeXlsxFile, readXlsxFile} = require('../helpers/xlsx.helpers')
 config.config();
 
 
@@ -291,6 +292,56 @@ const updateAssignment = async (req, res) => {
 
 }
 
+const exportStudentList = async (req, res) => {
+    const{classId} = req.params;
+    const _class = await classModel.findOne({id: classId})
+    const students = [];
+
+    for(let i = 0; i <  _class.memberId.length; i++){
+        const student = await userModel.findOne({id: _class.memberId[i]});
+        students.push({studentId: student.studentId, fullname: student.fullname});
+    }
+
+    writeXlsxFile('studentList', students)
+
+    return res.status(OK).download('./xlsxFolder/studentList.xlsx');
+}
+
+const importStudentList = async (req, res) => {
+    const file = req.file;
+    const{classId} = req.params;
+    
+    const studentList = readXlsxFile(file.filename);
+
+    const _class = await classModel.findOne({id: classId});
+    const students = [];
+
+    for(let i = 0; i <  _class.memberId.length; i++){
+        const student = await userModel.findOne({id: _class.memberId[i]});
+        students.push({studentId: student.studentId, fullname: student.fullname});
+    }
+
+    for(let i = 0; i < studentList.length; i++){
+        let isInClass = false;
+        for(let j = 0; i < students.length; j++) {
+            if(studentList[i].studentId == students[j].studentId){
+                isInClass = true;
+                break;
+            }
+        }
+
+        if(!isInClass){
+            const student = await userModel.findOne({studentId: studentList[i].studentId});
+            student.classIdMember.push(_class.id);
+            await userModel.updateOne({studentId: studentList[i].studentId}, {classIdMember: student.classIdMember})
+            _class.memberId.push(student.id);
+            await classModel.updateOne({id: _class.id}, {memberId: _class.memberId})
+        }
+    }
+
+    return res.send({message: _class.memberId})
+}
+
 module.exports = {
     getClass,
     createClass,
@@ -300,5 +351,7 @@ module.exports = {
     inviteClass,
     verifyInviteClass,
     joinClass,
-    updateAssignment
+    updateAssignment,
+    exportStudentList,
+    importStudentList,
 }
