@@ -4,11 +4,13 @@ class GradeDTO {
         member=null,
         classes=null,
         grade=null,
+        assignments=[]
     }) {
         this.id = id;
         this.member = member;
         this.classes = classes;
         this.grade = grade;
+        this.assignments = assignments;
     }
 }
 

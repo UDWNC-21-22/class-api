@@ -13,7 +13,7 @@ const { sendEmail, isMemberClass, isOwnerClass } = require('../helpers/class.hel
 const { Assignment } = require('../models/assignment.model');
 const shortCode = new ShortUniqueId({length: 7})
 const config = require('dotenv');
-const {writeXlsxFile, readXlsxFile} = require('../helpers/xlsx.helpers')
+const {writeXlsxFile, readXlsxFile} = require('../helpers/xlsx.helpers');
 config.config();
 
 
