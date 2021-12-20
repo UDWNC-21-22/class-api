@@ -6,9 +6,12 @@ const {
     getGradeByUser,
     exportGradeList,
     importGradeList,
+    updateGrade,
+    getTotalGrade
 } = require('../controllers/grade.controller');
 const {middleware} = require('../middlewares/jwt.middleware')
-const multer = require('multer')
+const multer = require('multer');
+const { updateAssignment } = require('../controllers/class.controller');
 const storage = multer.diskStorage({
     destination: function(req, file, cb) {
       cb(null, './xlsxFolder');
@@ -23,6 +26,8 @@ const upload = multer({ storage: storage });
 /* GET users listing. */
 //router.use(middleware)
 router.post('/post', postGrade)
+router.get('/:classId', getTotalGrade)
+router.post('/:classId/:assignmentId/:studentId', updateGrade)
 router.get('/:classId/:assignmentId/export', exportGradeList)
 router.post('/:classId/:assignmentId/import', upload.single('data'), importGradeList)
 router.get('/class/:id', getGradeByClass)

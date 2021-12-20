@@ -156,10 +156,61 @@ const importGradeList = async (req, res) => {
     return res.send({message: 'success'})
 }
 
+const updateGrade = async (req, res) => {
+    const {classId, assignmentId, studentId} = req.params;
+    let grade = gradeModel.findOne({classId: classId, studentId: studentId});
+    if(!grade.assignments){
+        const _class = classModel.findOne({id: classId})
+        const g = _class.assignments.find((item) => {
+            if(item.id == assignmentId)
+                return item
+        })
+        await gradeModel.updateOne({classId: classId, studentId: studentId}, {
+            id: g.id,
+            name: g.name,
+            grade: req.body.grade
+        })
+    }
+    else{
+        const g = grade.assignments.find((item) => {
+            if(item.id == assignmentId)
+                return item
+        })
+        g.grade = req.body.grade
+    }
+
+    return res.send({message: 'succeess'})
+}
+
+const getTotalGrade = async(req, res) => {
+    const {classId} = req.params;
+    const _class = classModel.findOne({id: classId})
+    const grades = [];
+    for(let i = 0; i < _class.memberId.length; i++){
+        const grade = gradeModel.findOne({classId: classId, memberId: _classmemberId[i]});
+        let assGrade = 0;
+        for(let j = 0; j < _class.assignments.length; j++){
+            const g = grade.assignments.find((item) => {
+                if(item.id == _class.assignments[j].id)
+                    return item
+            })
+            if(!g){
+                assGrade = assGrade + _class.assignments.scoreRate * g.grade / 100;
+            }
+        }
+
+        grades.push(assGrade);
+    }
+
+    return res.send({message: 'success', data: assGrade})
+}
+
 module.exports = {
     postGrade,
     getGradeByClass,
     getGradeByUser,
     exportGradeList,
     importGradeList,
+    updateGrade,
+    getTotalGrade
 }
