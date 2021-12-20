@@ -148,6 +148,14 @@ const userLogout = async (req, res) => {
     }
 }
 
+const updateStudentId = async (req, res) => {
+    const {id} = req.user
+    const student = await userModel.findOne({id: id});
+    if(!student.studentId){
+        await student.updateOne({id: id}, {studentId: req.body.studentId})
+    }
+}
+
 /**
  * user change password
  */
@@ -241,5 +249,6 @@ module.exports = {
     userLogout,
     changePassword,
     changeProfile,
-    googleLogin
+    googleLogin, 
+    updateStudentId,
 }
