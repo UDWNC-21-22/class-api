@@ -24,7 +24,7 @@ const storage = multer.diskStorage({
 const upload = multer({ storage: storage });
 
 /* GET users listing. */
-//router.use(middleware)
+router.use(middleware)
 router.post('/post', postGrade)
 router.get('/:classId', getTotalGrade)
 router.post('/:classId/:assignmentId/:studentId', updateGrade)

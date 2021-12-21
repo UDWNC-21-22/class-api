@@ -35,7 +35,8 @@ const classSchema = new mongoose.Schema({
         name: String,
         description: String,
         index: Number,
-        scoreRate: Number
+        scoreRate: Number,
+        isDone: Boolean,
     }]
 });
 

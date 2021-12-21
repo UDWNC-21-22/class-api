@@ -31,7 +31,7 @@ const upload = multer({ storage: storage });
 /* GET users listing. */
 router.post('/invite/verify', verifyInviteClass)
 
-//router.use(middleware)
+router.use(middleware)
 router.get('/me', getClass)
 router.post('/create', createClass)
 router.get('/me/:id',getClassByID)

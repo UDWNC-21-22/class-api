@@ -310,6 +310,7 @@ const exportStudentList = async (req, res) => {
 
 const importStudentList = async (req, res) => {
     const file = req.file;
+    console.log(file);
     const { classId } = req.params;
 
     const studentList = readXlsxFile(file.filename);
@@ -348,19 +349,24 @@ const getGradeList = async (req, res) => {
     const _class = await classModel.findOne({ id: classId });
     const datas = [];
     const assignments = [];
+    _class.assignments.forEach(e => {
+        assignments.push({id: e.id, name: e.name, max: e.scoreRate})
+
+    })
+    
 
     for (let i = 0; i < _class.memberId.length; i++) {
         const student = await userModel.findOne({ id: _class.memberId[i] });
-        const grades = []
-        const grade = await gradeModel.findOne({classId: classId, studentId: _class.memberId[i]});
+        let grades = [];
+        const grade = await gradeModel.findOne({classId: classId, memberId: student.id});
+        
         for(let j = 0; j < _class.assignments.length; j++){
-            assignments.push({id: _class.assignments[j].id, name: _class.assignments[j].name})
-            const assignment = grade.assignments.find((item) => {
+            const assignment = grade?.assignments.find((item) => {
                 if(item.id == _class.assignments[j].id){
                     return item
                 }
             })
-            grades.push(assignment?.grade)
+            grades.push({point: assignment?.grade, name: assignment?.name})
         }
         
         datas.push({ 
