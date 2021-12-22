@@ -3,15 +3,38 @@ var router = express.Router();
 const {
     postGrade,
     getGradeByClass,
-    getGradeByUser
+    getGradeByUser,
+    exportGradeList,
+    importGradeList,
+    updateGrade,
+    getTotalGrade,
+    updateIsDone,
 } = require('../controllers/grade.controller');
 const {middleware} = require('../middlewares/jwt.middleware')
+const multer = require('multer');
+const { updateAssignment } = require('../controllers/class.controller');
+const storage = multer.diskStorage({
+    destination: function(req, file, cb) {
+      cb(null, './xlsxFolder');
+    },
+    filename: function(req, file, cb) {
+        cb(null , file.originalname )
+    },
+  });
+  
+const upload = multer({ storage: storage });
 
 /* GET users listing. */
 router.use(middleware)
 router.post('/post', postGrade)
+router.get('/:classId', getTotalGrade)
+router.post('/:classId/:assignmentId/:studentId', updateGrade)
+router.get('/:classId/:assignmentId/export', exportGradeList)
+router.post('/:classId/:assignmentId/import', upload.single('data'), importGradeList)
 router.get('/class/:id', getGradeByClass)
 router.get('/me', getGradeByUser)
+router.post('/:classId/:assingmentId/isDone', updateIsDone)
+router.post('/:classId/:assignmentId/isDone', updateIsDone)
 
 
 module.exports = router;

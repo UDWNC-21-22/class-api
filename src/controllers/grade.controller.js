@@ -8,13 +8,14 @@ const { User, userModel } = require('../models/user.model');
 const { isOwnerClass, isMemberClass} = require('../helpers/class.helper');
 const { classModel } = require('../models/class.model');
 const { GradeDTO, MemberGradeDTO, ClassGradeDTO } = require('../models/gradeDTO.model');
-
+const {writeXlsxFile, readXlsxFile} = require('../helpers/xlsx.helpers');
 
 /**
  * Get all grade student of class
  * @param classId string
  */
 const getGradeByClass = async (req, res) => {
+    console.log('hi');
     const user = new User(req.user)
     const classId = req.params.id
 
@@ -120,12 +121,107 @@ const postGrade = async (req, res) => {
         console.log(e)
         return res.status(BAD_GATEWAY).send({message: "Post grade failed"})
     }
+}
 
+const exportGradeList = async (req, res) => {
+    const {classId} = req.params;
+    const _class = await classModel.findOne({id: classId});
+ 
+    const students = [];
 
+    for(let i = 0; i <  _class.memberId.length; i++){
+        const student = await userModel.findOne({id: _class.memberId[i]});
+        students.push({studentId: student.studentId, grade: ''});
+    }
+
+    writeXlsxFile('gradeList', students)
+    return res.status(OK).download('./xlsxFolder/gradeList.xlsx');
+    
+}
+
+const importGradeList = async (req, res) => {
+    const file = req.file;
+    const{classId, assignmentId} = req.params;
+    const _class = await classModel.findOne({id: classId});
+    const studentList = readXlsxFile(file.filename);
+
+    studentList.forEach(async (e) => {
+        const student = await userModel.findOne({studentId: e.studentId});
+        const assignment = await gradeModel.findOne({memberId: student.id, classId: classId});
+        const assName = _class.assignments.find(a => a.id == assignmentId);
+        assignment.assignments.push({id: assignmentId, name: assName.name, grade: e.grade})
+        await gradeModel.updateOne({id: assignment.id}, {assignments: assignment.assignments})
+    })
+
+    return res.send({message: 'success'})
+}
+
+const updateGrade = async (req, res) => {
+    const {classId, assignmentId, studentId} = req.params;
+    let grade = gradeModel.findOne({classId: classId, studentId: studentId});
+    if(!grade.assignments){
+        const _class = classModel.findOne({id: classId})
+        const g = _class.assignments.find((item) => {
+            if(item.id == assignmentId)
+                return item
+        })
+        await gradeModel.updateOne({classId: classId, studentId: studentId}, {
+            id: g.id,
+            name: g.name,
+            grade: req.body.grade
+        })
+    }
+    else{
+        const g = grade.assignments.find((item) => {
+            if(item.id == assignmentId)
+                return item
+        })
+        g.grade = req.body.grade
+    }
+
+    return res.send({message: 'succeess'})
+}
+
+const getTotalGrade = async(req, res) => {
+    const {classId} = req.params;
+    const _class = classModel.findOne({id: classId})
+    const grades = [];
+    for(let i = 0; i < _class.memberId.length; i++){
+        const grade = gradeModel.findOne({classId: classId, memberId: _classmemberId[i]});
+        let assGrade = 0;
+        for(let j = 0; j < _class.assignments.length; j++){
+            const g = grade.assignments.find((item) => {
+                if(item.id == _class.assignments[j].id)
+                    return item
+            })
+            if(!g){
+                assGrade = assGrade + g.grade;
+            }
+        }
+
+        grades.push(assGrade);
+    }
+
+    return res.send({message: 'success', data: assGrade})
+}
+
+const updateIsDone = async (req, res) => {
+    const {classId, assignmentId} = req.params;
+    const _class = await classModel.findOne({id: classId});
+    const index = _class.assignments.findIndex(element => element.id == assignmentId);
+
+    _class.assignments[index].isDone = true;
+    await classModel.updateOne({id: classId}, {assignments: _class.assignments})
+    return res.send({message: 'successed'})
 }
 
 module.exports = {
     postGrade,
     getGradeByClass,
     getGradeByUser,
+    exportGradeList,
+    importGradeList,
+    updateGrade,
+    getTotalGrade,
+    updateIsDone
 }
