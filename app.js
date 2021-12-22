@@ -14,7 +14,7 @@ var app = express();
 
 Connect()
     .then(() => console.log("connect db success"))
-    .catch(err => console.log("connect db faild: ", err))
+    .catch(err => console.log("connect db failed: ", err))
 Promise = global.Promise;
 
 // view engine setup
