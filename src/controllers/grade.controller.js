@@ -195,7 +195,7 @@ const getTotalGrade = async(req, res) => {
                     return item
             })
             if(!g){
-                assGrade = assGrade + _class.assignments.scoreRate * g.grade / 100;
+                assGrade = assGrade + g.grade;
             }
         }
 
@@ -205,6 +205,16 @@ const getTotalGrade = async(req, res) => {
     return res.send({message: 'success', data: assGrade})
 }
 
+const updateIsDone = async (req, res) => {
+    const {classId, assignmentId} = req.params;
+    const _class = await classModel.findOne({id: classId});
+    const index = _class.assignments.findIndex(element => element.id == assignmentId);
+
+    _class.assignments[index].isDone = true;
+    await classModel.updateOne({id: classId}, {assignments: _class.assignments})
+    return res.send({message: 'successed'})
+}
+
 module.exports = {
     postGrade,
     getGradeByClass,
@@ -212,5 +222,6 @@ module.exports = {
     exportGradeList,
     importGradeList,
     updateGrade,
-    getTotalGrade
+    getTotalGrade,
+    updateIsDone
 }
