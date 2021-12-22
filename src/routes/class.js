@@ -13,6 +13,7 @@ const {
     exportStudentList,
     importStudentList,
     getGradeList,
+    downloadGrade,
 } = require('../controllers/class.controller');
 const {middleware} = require('../middlewares/jwt.middleware')
 const multer = require('multer')
@@ -41,6 +42,7 @@ router.post('/invite', inviteClass)
 router.post('/join', joinClass)
 router.post('/update-assignment', updateAssignment)
 router.get('/:classId/grade', getGradeList)
+router.get('/:classId/grade/download', downloadGrade)
 router.get('/:classId/export', exportStudentList)
 router.post('/:classId/import', upload.single('data'), importStudentList)
 
