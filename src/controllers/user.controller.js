@@ -150,9 +150,15 @@ const userLogout = async (req, res) => {
 
 const updateStudentId = async (req, res) => {
     const {id} = req.user
+    const _student = await userModel.findOne({studentId: req.body.studentId})
+
+    if(_student != null){
+        return res.status(BAD_REQUEST).send({message: 'Student ID is taken'})
+    }
+    
     const student = await userModel.findOne({id: id});
     if(!student.studentId){
-        await student.updateOne({id: id}, {studentId: req.body.studentId})
+        await userModel.updateOne({id: id}, {studentId: req.body.studentId})
         return res.status(OK).send({message: 'success'});
     }
 
