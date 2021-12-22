@@ -34,7 +34,6 @@ router.post('/:classId/:assignmentId/import', upload.single('data'), importGrade
 router.get('/class/:id', getGradeByClass)
 router.get('/me', getGradeByUser)
 router.post('/:classId/:assingmentId/isDone', updateIsDone)
-router.post('/:classId/:assignmentId/isDone', updateIsDone)
 
 
 module.exports = router;
