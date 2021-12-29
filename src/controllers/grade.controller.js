@@ -141,6 +141,7 @@ const exportGradeList = async (req, res) => {
 
 const importGradeList = async (req, res) => {
     const file = req.file;
+    console.log(file);
     const{classId, assignmentId} = req.params;
     const _class = await classModel.findOne({id: classId});
     const studentList = readXlsxFile(file.filename);
@@ -149,7 +150,7 @@ const importGradeList = async (req, res) => {
         const student = await userModel.findOne({studentId: e.studentId});
         const assignment = await gradeModel.findOne({memberId: student.id, classId: classId});
         const assName = _class.assignments.find(a => a.id == assignmentId);
-        assignment.assignments.push({id: assignmentId, name: assName.name, grade: e.grade})
+        assignment?.assignments.push({id: assignmentId, name: assName.name, grade: e.grade})
         await gradeModel.updateOne({id: assignment.id}, {assignments: assignment.assignments})
     })
 
@@ -158,8 +159,11 @@ const importGradeList = async (req, res) => {
 
 const updateGrade = async (req, res) => {
     const {classId, assignmentId, studentId} = req.params;
-    let grade = gradeModel.findOne({classId: classId, studentId: studentId});
+    console.log(req.body);
+    let grade = await gradeModel.findOne({classId: classId, memberId: studentId});
+
     if(!grade.assignments){
+        console.log(1);
         const _class = classModel.findOne({id: classId})
         const g = _class.assignments.find((item) => {
             if(item.id == assignmentId)
@@ -172,11 +176,12 @@ const updateGrade = async (req, res) => {
         })
     }
     else{
-        const g = grade.assignments.find((item) => {
+        const index = grade.assignments.findIndex((item) => {
             if(item.id == assignmentId)
                 return item
         })
-        g.grade = req.body.grade
+        grade.assignments[index].grade = req.body.grade
+        await gradeModel.updateOne({classId: classId, studentId: studentId}, {assignments: grade.assignments})
     }
 
     return res.send({message: 'succeess'})
@@ -184,32 +189,34 @@ const updateGrade = async (req, res) => {
 
 const getTotalGrade = async(req, res) => {
     const {classId} = req.params;
-    const _class = classModel.findOne({id: classId})
+    const _class = await classModel.findOne({id: classId})
     const grades = [];
     for(let i = 0; i < _class.memberId.length; i++){
-        const grade = gradeModel.findOne({classId: classId, memberId: _classmemberId[i]});
+        const grade = await gradeModel.findOne({classId: classId, memberId: _class.memberId[i]});
         let assGrade = 0;
         for(let j = 0; j < _class.assignments.length; j++){
-            const g = grade.assignments.find((item) => {
+            const g = grade?.assignments.find((item) => {
                 if(item.id == _class.assignments[j].id)
                     return item
             })
             if(!g){
-                assGrade = assGrade + g.grade;
+                assGrade = assGrade + g?.grade;
             }
         }
 
         grades.push(assGrade);
     }
 
-    return res.send({message: 'success', data: assGrade})
+    return res.send({message: 'success', data: grades})
 }
 
 const updateIsDone = async (req, res) => {
     const {classId, assignmentId} = req.params;
     const _class = await classModel.findOne({id: classId});
     const index = _class.assignments.findIndex(element => element.id == assignmentId);
-
+    console.log(classId);
+    console.log(assignmentId);
+    console.log(index);
     _class.assignments[index].isDone = true;
     await classModel.updateOne({id: classId}, {assignments: _class.assignments})
     return res.send({message: 'successed'})

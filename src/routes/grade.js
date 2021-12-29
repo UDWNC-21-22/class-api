@@ -28,12 +28,13 @@ const upload = multer({ storage: storage });
 router.use(middleware)
 router.post('/post', postGrade)
 router.get('/:classId', getTotalGrade)
-router.post('/:classId/:assignmentId/:studentId', updateGrade)
 router.get('/:classId/:assignmentId/export', exportGradeList)
 router.post('/:classId/:assignmentId/import', upload.single('data'), importGradeList)
+router.post('/:classId/:assignmentId/isDone', updateIsDone)
+router.post('/:classId/:assignmentId/:studentId', updateGrade)
 router.get('/class/:id', getGradeByClass)
 router.get('/me', getGradeByUser)
-router.post('/:classId/:assingmentId/isDone', updateIsDone)
+
 
 
 module.exports = router;

@@ -401,7 +401,7 @@ const getGradeList = async (req, res) => {
   const datas = [];
   const assignments = [];
   _class.assignments.forEach((e) => {
-    assignments.push({ id: e.id, name: e.name, max: e.scoreRate });
+    assignments.push({ id: e.id, name: e.name, max: e.scoreRate, isDone: e.isDone });
   });
 
   for (let i = 0; i < _class.memberId.length; i++) {
@@ -418,7 +418,7 @@ const getGradeList = async (req, res) => {
           return item;
         }
       });
-      grades.push({ point: assignment?.grade, name: assignment?.name });
+      grades.push({ point: assignment?.grade, id: _class.assignments[j].id });
     }
 
     datas.push({
@@ -431,7 +431,7 @@ const getGradeList = async (req, res) => {
 
   return res.send({
     message: "successed",
-    assignment: assignments,
+    assignments: assignments,
     data: datas,
   });
 };
