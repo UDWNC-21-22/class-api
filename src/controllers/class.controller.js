@@ -425,6 +425,7 @@ const getGradeList = async (req, res) => {
       id: student.id,
       studentId: student?.studentId,
       fullname: student.fullname,
+      total: grade.grade,
       grades: grades,
     });
   }
@@ -448,16 +449,14 @@ const downloadGrade = async (req, res) => {
       classId: classId,
       memberId: _class.memberId[i],
     });
-    let sum = 0;
     for (let j = 0; j < _class.assignments.length; j++) {
       const idx = g?.assignments.findIndex((e) => {
         return e.id === _class.assignments[j].id;
       });
-      sum += g?.assignments[idx]?.grade == undefined ? 0 : g.assignments[idx].grade;
       objAss[_class.assignments[j].name] =
         g?.assignments[idx]?.grade == undefined ? 0 : g.assignments[idx].grade;
     }
-    objAss['total'] = sum
+    objAss['total'] = g.grade;
     _student.push({...{name: s.fullname}, ...objAss});
   }
 

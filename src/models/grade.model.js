@@ -20,7 +20,7 @@ const gradeSchema = new mongoose.Schema({
     id: String,
     memberId: String,
     classId: String,
-    grade: String,
+    grade: Number,
     assignments: [{
         id: String,
         name: String,
