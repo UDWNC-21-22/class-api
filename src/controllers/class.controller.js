@@ -19,6 +19,7 @@ const shortCode = new ShortUniqueId({ length: 7 });
 const config = require("dotenv");
 const { writeXlsxFile, readXlsxFile } = require("../helpers/xlsx.helpers");
 const { gradeModel } = require("../models/grade.model");
+const {getTotalGrade} = require('../controllers/grade.controller')
 config.config();
 
 /**
@@ -425,7 +426,7 @@ const getGradeList = async (req, res) => {
       id: student.id,
       studentId: student?.studentId,
       fullname: student.fullname,
-      total: grade.grade,
+      total: await getTotalGrade({classId: classId, memberId: _class.memberId[i]}),
       grades: grades,
     });
   }
@@ -456,7 +457,7 @@ const downloadGrade = async (req, res) => {
       objAss[_class.assignments[j].name] =
         g?.assignments[idx]?.grade == undefined ? 0 : g.assignments[idx].grade;
     }
-    objAss['total'] = g.grade;
+    objAss['total'] = await getTotalGrade({classId: classId, memberId: _class.memberId[i]});
     _student.push({...{name: s.fullname}, ...objAss});
   }
 
