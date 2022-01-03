@@ -417,9 +417,9 @@ const getGradeList = async (req, res) => {
     });
 
     for (let j = 0; j < _class.assignments.length; j++) {
-      if(grade.assignments != undefined) {
+      if(grade?.assignments !== undefined) {
         const assignment = grade.assignments.find((item) => {
-          if (item.id == _class?.assignments[j].id) {
+          if (item.id == _class.assignments[j].id) {
             return item;
           }
         });
