@@ -429,7 +429,7 @@ const getGradeList = async (req, res) => {
 
     datas.push({
       id: student.id,
-      studentId: student?.studentId,
+      studentId: student.studentId?student.studentId:null,
       fullname: student.fullname,
       total: await getTotalGrade({
         classId: classId,
