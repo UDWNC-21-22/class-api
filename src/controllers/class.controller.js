@@ -354,23 +354,26 @@ const exportStudentList = async (req, res) => {
 
 const importStudentList = async (req, res) => {
   const file = req.file;
-  console.log(file);
   const { classId } = req.params;
 
   const studentList = readXlsxFile(file.filename);
 
   const _class = await classModel.findOne({ id: classId });
   const students = [];
-
+  console.log(studentList);
   for (let i = 0; i < _class.memberId.length; i++) {
     const student = await userModel.findOne({ id: _class.memberId[i] });
-    students.push({ studentId: student.studentId, fullname: student.fullname });
+    students.push({id: student.id, studentId: student.studentId, fullname: student.fullname });
   }
-
+  console.log(students);
   for (let i = 0; i < studentList.length; i++) {
     let isInClass = false;
     for (let j = 0; i < students.length; j++) {
-      if (studentList[i].studentId == students[j].studentId) {
+      if (studentList[i].studentId == students[j]?.studentId) {
+        isInClass = true;
+        break;
+      }
+      if (!students[j]?.studentId) {
         isInClass = true;
         break;
       }
