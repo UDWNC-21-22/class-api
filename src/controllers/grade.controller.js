@@ -133,49 +133,49 @@ const postGrade = async (req, res) => {
   }
 };
 
-const exportGradeList = async (req, res) => {
-  const { classId } = req.params;
-  const _class = await classModel.findOne({ id: classId });
+// const exportGradeList = async (req, res) => {
+//   const { classId } = req.params;
+//   const _class = await classModel.findOne({ id: classId });
 
-  const students = [];
+//   const students = [];
 
-  for (let i = 0; i < _class.memberId.length; i++) {
-    const student = await userModel.findOne({ id: _class.memberId[i] });
-    students.push({ studentId: student.studentId, grade: "" });
-  }
+//   for (let i = 0; i < _class.memberId.length; i++) {
+//     const student = await userModel.findOne({ id: _class.memberId[i] });
+//     students.push({ studentId: student.studentId, grade: "" });
+//   }
 
-  writeXlsxFile("gradeList", students);
-  return res.status(OK).download("./xlsxFolder/gradeList.xlsx");
-};
+//   writeXlsxFile("gradeList", students);
+//   return res.status(OK).download("./xlsxFolder/gradeList.xlsx");
+// };
 
-const importGradeList = async (req, res) => {
-  const file = req.file;
+// const importGradeList = async (req, res) => {
+//   const file = req.file;
 
-  const { classId, assignmentId } = req.params;
-  const _class = await classModel.findOne({ id: classId });
-  const studentList = readXlsxFile(file.filename);
+//   const { classId, assignmentId } = req.params;
+//   const _class = await classModel.findOne({ id: classId });
+//   const studentList = readXlsxFile(file.filename);
 
-  studentList.forEach(async (e) => {
-    const student = await userModel.findOne({ studentId: e.studentId });
-    const assignment = await gradeModel.findOne({
-      memberId: student.id,
-      classId: classId,
-    });
-    const ass = _class.assignments.find((a) => a.id == assignmentId);
-    assignment?.assignments.push({
-      id: assignmentId,
-      name: ass.name,
-      grade: e.grade,
-    });
-    await gradeModel.updateOne(
-      { id: assignment.id },
-      { assignments: assignment.assignments,
-      grade: assignment.grade + e.grade * ass.scoreRate / 10 }
-    );
-  });
+//   studentList.forEach(async (e) => {
+//     const student = await userModel.findOne({ studentId: e.studentId });
+//     const assignment = await gradeModel.findOne({
+//       memberId: student.id,
+//       classId: classId,
+//     });
+//     const ass = _class.assignments.find((a) => a.id == assignmentId);
+//     assignment?.assignments.push({
+//       id: assignmentId,
+//       name: ass.name,
+//       grade: e.grade,
+//     });
+//     await gradeModel.updateOne(
+//       { id: assignment.id },
+//       { assignments: assignment.assignments,
+//       grade: assignment.grade + e.grade * ass.scoreRate / 10 }
+//     );
+//   });
 
-  return res.send({ message: "success" });
-};
+//   return res.send({ message: "success" });
+// };
 
 const updateGrade = async (req, res) => {
   const { classId, assignmentId, studentId } = req.params;
@@ -280,8 +280,8 @@ module.exports = {
   postGrade,
   getGradeByClass,
   getGradeByUser,
-  exportGradeList,
-  importGradeList,
+  //exportGradeList,
+  //importGradeList,
   updateGrade,
   getTotalGrade,
   updateIsDone,

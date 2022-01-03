@@ -337,67 +337,67 @@ const updateAssignment = async (req, res) => {
   return res.status(OK).send({ message: "Update assignment successfully" });
 };
 
-const exportStudentList = async (req, res) => {
-  const { classId } = req.params;
-  const _class = await classModel.findOne({ id: classId });
-  const students = [];
+// const exportStudentList = async (req, res) => {
+//   const { classId } = req.params;
+//   const _class = await classModel.findOne({ id: classId });
+//   const students = [];
 
-  for (let i = 0; i < _class.memberId.length; i++) {
-    const student = await userModel.findOne({ id: _class.memberId[i] });
-    students.push({ studentId: student.studentId, fullname: student.fullname });
-  }
+//   for (let i = 0; i < _class.memberId.length; i++) {
+//     const student = await userModel.findOne({ id: _class.memberId[i] });
+//     students.push({ studentId: student.studentId, fullname: student.fullname });
+//   }
 
-  writeXlsxFile("studentList", students);
+//   writeXlsxFile("studentList", students);
 
-  return res.status(OK).download("./xlsxFolder/studentList.xlsx");
-};
+//   return res.status(OK).download("./xlsxFolder/studentList.xlsx");
+// };
 
-const importStudentList = async (req, res) => {
-  const file = req.file;
-  const { classId } = req.params;
+// const importStudentList = async (req, res) => {
+//   const file = req.file;
+//   const { classId } = req.params;
 
-  const studentList = readXlsxFile(file.filename);
+//   const studentList = readXlsxFile(file.filename);
 
-  const _class = await classModel.findOne({ id: classId });
-  const students = [];
-  console.log(studentList);
-  for (let i = 0; i < _class.memberId.length; i++) {
-    const student = await userModel.findOne({ id: _class.memberId[i] });
-    students.push({id: student.id, studentId: student.studentId, fullname: student.fullname });
-  }
-  console.log(students);
-  for (let i = 0; i < studentList.length; i++) {
-    let isInClass = false;
-    for (let j = 0; i < students.length; j++) {
-      if (studentList[i].studentId == students[j]?.studentId) {
-        isInClass = true;
-        break;
-      }
-      if (!students[j]?.studentId) {
-        isInClass = true;
-        break;
-      }
-    }
+//   const _class = await classModel.findOne({ id: classId });
+//   const students = [];
+//   console.log(studentList);
+//   for (let i = 0; i < _class.memberId.length; i++) {
+//     const student = await userModel.findOne({ id: _class.memberId[i] });
+//     students.push({id: student.id, studentId: student.studentId, fullname: student.fullname });
+//   }
+//   console.log(students);
+//   for (let i = 0; i < studentList.length; i++) {
+//     let isInClass = false;
+//     for (let j = 0; i < students.length; j++) {
+//       if (studentList[i].studentId == students[j]?.studentId) {
+//         isInClass = true;
+//         break;
+//       }
+//       if (!students[j]?.studentId) {
+//         isInClass = true;
+//         break;
+//       }
+//     }
 
-    if (!isInClass) {
-      const student = await userModel.findOne({
-        studentId: studentList[i].studentId,
-      });
-      student.classIdMember.push(_class.id);
-      await userModel.updateOne(
-        { studentId: studentList[i].studentId },
-        { classIdMember: student.classIdMember }
-      );
-      _class.memberId.push(student.id);
-      await classModel.updateOne(
-        { id: _class.id },
-        { memberId: _class.memberId }
-      );
-    }
-  }
+//     if (!isInClass) {
+//       const student = await userModel.findOne({
+//         studentId: studentList[i].studentId,
+//       });
+//       student.classIdMember.push(_class.id);
+//       await userModel.updateOne(
+//         { studentId: studentList[i].studentId },
+//         { classIdMember: student.classIdMember }
+//       );
+//       _class.memberId.push(student.id);
+//       await classModel.updateOne(
+//         { id: _class.id },
+//         { memberId: _class.memberId }
+//       );
+//     }
+//   }
 
-  return res.send({ message: _class.memberId });
-};
+//   return res.send({ message: _class.memberId });
+// };
 
 const getGradeList = async (req, res) => {
   const { classId } = req.params;
@@ -441,33 +441,33 @@ const getGradeList = async (req, res) => {
   });
 };
 
-const downloadGrade = async (req, res) => {
-  const { classId } = req.params;
-  const _class = await classModel.findOne({ id: classId });
+// const downloadGrade = async (req, res) => {
+//   const { classId } = req.params;
+//   const _class = await classModel.findOne({ id: classId });
 
-  const _student = [];
-  for (let i = 0; i < _class.memberId.length; i++) {
-    const objAss = {};
-    const s = await userModel.findOne({ id: _class.memberId[i] });
-    const g = await gradeModel.findOne({
-      classId: classId,
-      memberId: _class.memberId[i],
-    });
-    for (let j = 0; j < _class.assignments.length; j++) {
-      const idx = g?.assignments.findIndex((e) => {
-        return e.id === _class.assignments[j].id;
-      });
-      objAss[_class.assignments[j].name] =
-        g?.assignments[idx]?.grade == undefined ? 0 : g.assignments[idx].grade;
-    }
-    objAss['total'] = await getTotalGrade({classId: classId, memberId: _class.memberId[i]});
-    _student.push({...{name: s.fullname}, ...objAss});
-  }
+//   const _student = [];
+//   for (let i = 0; i < _class.memberId.length; i++) {
+//     const objAss = {};
+//     const s = await userModel.findOne({ id: _class.memberId[i] });
+//     const g = await gradeModel.findOne({
+//       classId: classId,
+//       memberId: _class.memberId[i],
+//     });
+//     for (let j = 0; j < _class.assignments.length; j++) {
+//       const idx = g?.assignments.findIndex((e) => {
+//         return e.id === _class.assignments[j].id;
+//       });
+//       objAss[_class.assignments[j].name] =
+//         g?.assignments[idx]?.grade == undefined ? 0 : g.assignments[idx].grade;
+//     }
+//     objAss['total'] = await getTotalGrade({classId: classId, memberId: _class.memberId[i]});
+//     _student.push({...{name: s.fullname}, ...objAss});
+//   }
 
-  writeXlsxFile("studentList", _student);
+//   writeXlsxFile("studentList", _student);
 
-  return res.status(OK).download("./xlsxFolder/studentList.xlsx");
-};
+//   return res.status(OK).download("./xlsxFolder/studentList.xlsx");
+// };
 
 module.exports = {
   getClass,
@@ -479,8 +479,8 @@ module.exports = {
   verifyInviteClass,
   joinClass,
   updateAssignment,
-  exportStudentList,
-  importStudentList,
+  //exportStudentList,
+  //importStudentList,
   getGradeList,
-  downloadGrade,
+  //downloadGrade,
 };
