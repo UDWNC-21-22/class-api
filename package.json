@@ -4,7 +4,7 @@
   "type": "commonjs",
   "private": true,
   "engines": {
-    "node": "12.x",
+    "node": "16.x",
     "npm": "7.0.3"
   },
   "scripts": {

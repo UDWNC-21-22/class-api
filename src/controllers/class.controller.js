@@ -397,12 +397,7 @@ const getGradeList = async (req, res) => {
   const datas = [];
   const assignments = [];
   _class.assignments.forEach((e) => {
-    assignments.push({
-      id: e.id,
-      name: e.name,
-      max: e.scoreRate,
-      isDone: e.isDone,
-    });
+    assignments.push({ id: e.id, name: e.name, max: e.scoreRate, isDone: e.isDone });
   });
 
   for (let i = 0; i < _class.memberId.length; i++) {
@@ -413,28 +408,20 @@ const getGradeList = async (req, res) => {
       memberId: student.id,
     });
 
-    if(grade) {
-      for (let j = 0; j < _class.assignments.length; j++) {
-        let assignment;
-        for (let k = 0; k < grade.assignments.length; k++) {
-          if (grade.assignments[k].id == _class.assignments[j].id) {
-            assignment = grade.assignments[k];
-            break;
-          }
+    for (let j = 0; j < _class.assignments.length; j++) {
+      const assignment = grade?.assignments.find((item) => {
+        if (item.id == _class.assignments[j].id) {
+          return item;
         }
-  
-        grades.push({ point: assignment?.grade, id: _class.assignments[j].id });
-      }
+      });
+      grades.push({ point: assignment?.grade, id: _class.assignments[j].id });
     }
 
     datas.push({
       id: student.id,
-      studentId: student.studentId?student.studentId:null,
+      studentId: student?.studentId,
       fullname: student.fullname,
-      total: await getTotalGrade({
-        classId: classId,
-        memberId: _class.memberId[i],
-      }),
+      total: await getTotalGrade({classId: classId, memberId: _class.memberId[i]}),
       grades: grades,
     });
   }
