@@ -417,12 +417,14 @@ const getGradeList = async (req, res) => {
     });
 
     for (let j = 0; j < _class.assignments.length; j++) {
-      const assignment = grade?.assignments.find((item) => {
-        if (item.id == _class?.assignments[j].id) {
-          return item;
-        }
-      });
-      grades.push({ point: assignment?.grade, id: _class.assignments[j].id });
+      if(grade.assignments != undefined) {
+        const assignment = grade.assignments.find((item) => {
+          if (item.id == _class?.assignments[j].id) {
+            return item;
+          }
+        });
+        grades.push({ point: assignment?.grade, id: _class.assignments[j].id });
+      }
     }
 
     datas.push({
