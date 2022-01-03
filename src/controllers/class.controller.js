@@ -19,7 +19,7 @@ const shortCode = new ShortUniqueId({ length: 7 });
 const config = require("dotenv");
 const { writeXlsxFile, readXlsxFile } = require("../helpers/xlsx.helpers");
 const { gradeModel } = require("../models/grade.model");
-const {getTotalGrade} = require('../controllers/grade.controller')
+const { getTotalGrade } = require("../controllers/grade.controller");
 config.config();
 
 /**
@@ -175,12 +175,10 @@ const getClassByID = async (req, res) => {
   let classroomQuery = await classModel.findOne({ id: idClass });
   if (!classroomQuery)
     return res.status(BAD_REQUEST).send({ message: "classroom not found" });
-  return res
-    .status(OK)
-    .send({
-      message: "Get class successfully",
-      data: new Class(classroomQuery),
-    });
+  return res.status(OK).send({
+    message: "Get class successfully",
+    data: new Class(classroomQuery),
+  });
 };
 
 /**
@@ -242,23 +240,19 @@ const verifyInviteClass = async (req, res) => {
 
   let userQuery = await userModel.findOne({ email: data.email });
   if (!userQuery)
-    return res
-      .status(BAD_REQUEST)
-      .send({
-        message: "Verify invite token failed",
-        errors: { email: ["Email is not register account"] },
-      });
+    return res.status(BAD_REQUEST).send({
+      message: "Verify invite token failed",
+      errors: { email: ["Email is not register account"] },
+    });
 
   let classes = await classModel.findOne({ id: data.classId });
   classes = new Class(classes._doc);
 
   if (classes.inviteToken.indexOf(inviteToken) < 0)
-    return res
-      .status(BAD_REQUEST)
-      .send({
-        message: "User join class failed",
-        errors: { inviteToken: ["Invite token not exists"] },
-      });
+    return res.status(BAD_REQUEST).send({
+      message: "User join class failed",
+      errors: { inviteToken: ["Invite token not exists"] },
+    });
 
   classes.inviteToken = classes.inviteToken.filter(
     (token) => token != inviteToken
@@ -314,12 +308,10 @@ const updateAssignment = async (req, res) => {
   dataValidate.required(["classId", "assignments"]);
 
   if (dataValidate.hasError())
-    return res
-      .status(BAD_REQUEST)
-      .send({
-        message: "Update assignment failed",
-        error: dataValidate.errors,
-      });
+    return res.status(BAD_REQUEST).send({
+      message: "Update assignment failed",
+      error: dataValidate.errors,
+    });
 
   if (!isOwnerClass(user.id, data.classId)) {
     return res.status(UNAUTHORIZED).send({ message: "You not permission" });
@@ -405,7 +397,12 @@ const getGradeList = async (req, res) => {
   const datas = [];
   const assignments = [];
   _class.assignments.forEach((e) => {
-    assignments.push({ id: e.id, name: e.name, max: e.scoreRate, isDone: e.isDone });
+    assignments.push({
+      id: e.id,
+      name: e.name,
+      max: e.scoreRate,
+      isDone: e.isDone,
+    });
   });
 
   for (let i = 0; i < _class.memberId.length; i++) {
@@ -416,13 +413,16 @@ const getGradeList = async (req, res) => {
       memberId: student.id,
     });
 
-    for (let j = 0; j < _class.assignments.length; j++) {
-      if(grade?.assignments !== undefined) {
-        const assignment = grade.assignments.find((item) => {
-          if (item.id == _class.assignments[j].id) {
-            return item;
+    if(grade) {
+      for (let j = 0; j < _class.assignments.length; j++) {
+        let assignment;
+        for (let k = 0; k < grade.assignments.length; k++) {
+          if (grade.assignments[k].id == _class.assignments[j].id) {
+            assignment = grade.assignments[k];
+            break;
           }
-        });
+        }
+  
         grades.push({ point: assignment?.grade, id: _class.assignments[j].id });
       }
     }
@@ -431,7 +431,10 @@ const getGradeList = async (req, res) => {
       id: student.id,
       studentId: student?.studentId,
       fullname: student.fullname,
-      total: await getTotalGrade({classId: classId, memberId: _class.memberId[i]}),
+      total: await getTotalGrade({
+        classId: classId,
+        memberId: _class.memberId[i],
+      }),
       grades: grades,
     });
   }
