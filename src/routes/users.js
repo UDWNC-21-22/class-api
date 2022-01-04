@@ -10,12 +10,18 @@ const {
   changePassword,
   changeProfile,
   googleLogin,
-  updateStudentId
+  updateStudentId,
+  forgotPassword,
+  resetPassword,
+  activeAccount
 } = require("../controllers/user.controller");
 const { middleware } = require("../middlewares/jwt.middleware");
 
 /* GET users listing. */
 router.get("/", userList);
+router.post('/forgotPassword', forgotPassword)
+router.post('/resetPassword', resetPassword)
+router.post('/active/:id', activeAccount)
 router.post("/register", userRegister);
 router.post("/login", userLogin);
 router.post("/googlelogin", googleLogin);

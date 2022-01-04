@@ -1,70 +1,90 @@
-const { StatusCodes } = require('http-status-codes')
-const { OK, FORBIDDEN, BAD_REQUEST, BAD_GATEWAY } = StatusCodes
-const { validateEmail } = require('../helpers/form.helper')
-const { User, userModel } = require('../models/user.model')
-const { v1: uuidv1 } = require('uuid');
+const { StatusCodes } = require("http-status-codes");
+const { OK, FORBIDDEN, BAD_REQUEST, BAD_GATEWAY } = StatusCodes;
+const { validateEmail } = require("../helpers/form.helper");
+const { User, userModel } = require("../models/user.model");
+const { v1: uuidv1 } = require("uuid");
 const CryptoJS = require("crypto-js");
-const ValidateService = require('../services/validate.service')
-const JwtService = require('../services/jwt.service')
-const jwtService = new JwtService()
-
+const ValidateService = require("../services/validate.service");
+const JwtService = require("../services/jwt.service");
+const jwtService = new JwtService();
+const { sendEmail } = require("../helpers/class.helper");
 
 const userList = (req, res) => {
-    const data = [
-        {
-            user: 'user 1',
-            emai: 'email 1'
-        },
-        {
-            user: 'user 2',
-            emai: 'email 2'
-        }
-    ]
+  const data = [
+    {
+      user: "user 1",
+      emai: "email 1",
+    },
+    {
+      user: "user 2",
+      emai: "email 2",
+    },
+  ];
 
-    return res.status(200).send({ data })
-}
-
+  return res.status(200).send({ data });
+};
 
 /**
  * User Register
- * @param username string 
- * @param password string 
- * @param email string 
- * @param fullname string 
+ * @param username string
+ * @param password string
+ * @param email string
+ * @param fullname string
  */
 const userRegister = async (req, res) => {
+  let user = new User(req.body);
 
-    let user = new User(req.body)
+  let validate = new ValidateService(user);
+  validate.required(["username", "password", "email", "fullname"]);
+  validate.validateEmail();
 
-    let validate = new ValidateService(user)
-    validate.required(['username', 'password', 'email', 'fullname'])
-    validate.validateEmail()
+  if (validate.hasError())
+    return res
+      .status(BAD_REQUEST)
+      .send({ message: "Regsiter failed", errors: validate.errors });
 
-    if (validate.hasError())
-        return res.status(BAD_REQUEST).send({ message: "Regsiter failed", errors: validate.errors })
+  // check username exists
+  const userQuery = await userModel.findOne({ username: user.username });
+  if (!!userQuery) {
+    return res.status(BAD_REQUEST).send({
+      message: "Register failed",
+      errors: { username: "Username already registered" },
+    });
+  }
+  //check email exists
+  const emailQuery = await userModel.findOne({email: user.email});
+  const unactiveEmailQuery = await userModel.findOne({email: user.email+'&active'})
+  if(!!emailQuery || !!unactiveEmailQuery) {
+    return res.status(BAD_REQUEST).send({
+        message: "Register failed",
+        errors: { username: "Email already registered" },
+      });
+  }
 
-    // check username exists
-    const userQuery = await userModel.findOne({ username: user.username })
-    if (!!userQuery) {
-        return res.status(BAD_REQUEST).send({ message: 'Register failed', errors: { username: 'Username already registered' } })
-    }
+  user.id = uuidv1();
+  user.password = CryptoJS.MD5(user.password).toString();
 
+  // console.log(user)
+  try {
+    const m = user.email;
+    user.email=user.email+'&active'
+    await userModel.create(user);
 
-    user.id = uuidv1();
-    user.password = CryptoJS.MD5(user.password).toString()
+    const env = process.env.NODE_ENV || "dev";
+    
+    const uri =
+     `${env == "dev" ? process.env.HOST_DEV : process.env.HOST_PRO}` +
+      "/active/" +
+      `${user.id}`;
 
-    // console.log(user)
-    try {
-        await userModel.create(user)
-        return res.status(OK).send({ message: "Register successfully" })
-    }
-    catch (err) {
-        console.log(err)
-        return res.status(BAD_GATEWAY).send({ message: "OOps" })
-    }
+    await sendEmail({email: m, content: `Active link: ${uri}`})
 
-}
-
+    return res.status(OK).send({ message: "Register successfully. Please check your email to active account" });
+  } catch (err) {
+    console.log(err);
+    return res.status(BAD_GATEWAY).send({ message: "OOps" });
+  }
+};
 
 /**
  * User login
@@ -73,191 +93,294 @@ const userRegister = async (req, res) => {
  */
 
 const userLogin = async (req, res) => {
-    let user = new User(req.body);
-    let formValidate = new ValidateService(user);
-    formValidate.required(['username', 'password'])
-    if (formValidate.hasError())
-        return res.status(BAD_REQUEST).send({ message: 'Login failed', errors: formValidate.errors })
+  let user = new User(req.body);
+  let formValidate = new ValidateService(user);
+  formValidate.required(["username", "password"]);
+  if (formValidate.hasError())
+    return res
+      .status(BAD_REQUEST)
+      .send({ message: "Login failed", errors: formValidate.errors });
 
-    let userQuery = await userModel.findOne({ username: user.username, password: CryptoJS.MD5(user.password).toString() })
-    if (!userQuery)
-        return res.status(BAD_REQUEST).send({ message: 'Username or password invalid' })
+  let userQuery = await userModel.findOne({
+    username: user.username,
+    password: CryptoJS.MD5(user.password).toString(),
+  });
+  if (!userQuery)
+    return res
+      .status(BAD_REQUEST)
+      .send({ message: "Username or password invalid" });
 
+  userQuery = new User(userQuery._doc);
+  userQuery.access_token = jwtService.generateJwt(userQuery);
+  // console.log(userQuery)
+  
+  //check is actived account
+  const check = userQuery.email.split('&')
+  if(check[1] == 'active')
+  {
+    
+    const env = process.env.NODE_ENV || "dev";
+    const uri =
+     `${env == "dev" ? process.env.HOST_DEV : process.env.HOST_PRO}` +
+      "/active/" +
+      `${userQuery.id}`;
 
+    await sendEmail({email: check[0], content: `Active link: ${uri}`})
 
-    userQuery = new User(userQuery._doc)
-    userQuery.access_token = jwtService.generateJwt(userQuery)
-    // console.log(userQuery)
+    return res.status(BAD_REQUEST).send({message: "please check your email to active account"})
+  }
 
-    try {
-        await userModel.updateOne({ id: userQuery.id }, userQuery)
-        return res.status(OK).send({ message: 'Login successfully', data: userQuery })
-    }
-    catch (err) {
-        console.log(err);
-        return res.status(BAD_GATEWAY).send({ message: "OOps" })
-    }
-
-}
-
+  try {
+    await userModel.updateOne({ id: userQuery.id }, userQuery);
+    return res
+      .status(OK)
+      .send({ message: "Login successfully", data: userQuery });
+  } catch (err) {
+    console.log(err);
+    return res.status(BAD_GATEWAY).send({ message: "OOps" });
+  }
+};
 
 /**
  * User authenticate
  */
 
 const authenticate = async (req, res) => {
-    let authorization = req.headers.authorization;
-    let accessToken = authorization.split(" ")[1].trim();
-    let data = jwtService.verifyJwt(accessToken)
-    // console.log(data)
+  let authorization = req.headers.authorization;
+  let accessToken = authorization.split(" ")[1].trim();
+  let data = jwtService.verifyJwt(accessToken);
+  // console.log(data)
 
-    if (!data)
-        return res.status(FORBIDDEN).send({ message: 'Access token invalid' })
+  if (!data)
+    return res.status(FORBIDDEN).send({ message: "Access token invalid" });
 
-    let user = await userModel.findOne({ id: data.id })
+  let user = await userModel.findOne({ id: data.id });
 
-    // console.log(user)
+  // console.log(user)
 
-    return res.status(OK).send({ data: new User(user) })
-
-}
-
+  return res.status(OK).send({ data: new User(user) });
+};
 
 /**
  * Get info user
  */
 const userInfo = async (req, res) => {
-    let user = new User(req.user)
-    let userQuery = await userModel.findOne({id: user.id})
-    if (!userQuery) return res.status(BAD_REQUEST).send({ message: 'User not found' })
-    return res.status(OK).send({ data: new User(req.user) })
-}
+  let user = new User(req.user);
+  let userQuery = await userModel.findOne({ id: user.id });
+  if (!userQuery)
+    return res.status(BAD_REQUEST).send({ message: "User not found" });
+  return res.status(OK).send({ data: new User(req.user) });
+};
 
 /**
  * User logout
  */
 const userLogout = async (req, res) => {
-    let user = new User(req.user)
-    try{
-        await userModel.updateOne({id: user.id}, {access_token: ''})
-        return res.status(OK).send({message: 'Logout successfully'})
-    }
-    catch(err){
-        console.log(err)
-        return res.status(BAD_GATEWAY).send({message: 'An error has occurred'})
-    }
-}
+  let user = new User(req.user);
+  try {
+    await userModel.updateOne({ id: user.id }, { access_token: "" });
+    return res.status(OK).send({ message: "Logout successfully" });
+  } catch (err) {
+    console.log(err);
+    return res.status(BAD_GATEWAY).send({ message: "An error has occurred" });
+  }
+};
 
 const updateStudentId = async (req, res) => {
-    const {id} = req.user
-    const _student = await userModel.findOne({studentId: req.body.studentId})
+  const { id } = req.user;
+  const _student = await userModel.findOne({ studentId: req.body.studentId });
 
-    if(_student != null){
-        return res.status(BAD_REQUEST).send({message: 'Student ID is taken'})
-    }
-    
-    const student = await userModel.findOne({id: id});
-    if(!student.studentId){
-        await userModel.updateOne({id: id}, {studentId: req.body.studentId})
-        return res.status(OK).send({message: 'success'});
-    }
+  if (_student != null) {
+    return res.status(BAD_REQUEST).send({ message: "Student ID is taken" });
+  }
 
-    return res.status(BAD_REQUEST).send({message: 'Student ID existed'})
-}
+  const student = await userModel.findOne({ id: id });
+  if (!student.studentId) {
+    await userModel.updateOne({ id: id }, { studentId: req.body.studentId });
+    return res.status(OK).send({ message: "success" });
+  }
+
+  return res.status(BAD_REQUEST).send({ message: "Student ID existed" });
+};
 
 /**
  * user change password
  */
 const changePassword = async (req, res) => {
-    let user = new User(req.user);
-    let update = req.body
-    console.log(update);
-    let userQuery = await userModel.findOne({id: user.id})
-    if(update.changePassword != update.confirmPassword){
-        return res.status(BAD_REQUEST).send({ message: "Confirm password does not match", errors: "Not match" });
-    }
-    if(userQuery.password != CryptoJS.MD5(update.currentPassword).toString()){
-        return res.status(BAD_REQUEST).send({ message: "Current password does not match", errors: "Not match" });
-    }
+  let user = new User(req.user);
+  let update = req.body;
 
-    try{
-        update.changePassword = CryptoJS.MD5(update.changePassword).toString()
-        await userModel.updateOne({id: user.id}, {password: update.changePassword})
-        return res.status(OK).send({message: 'Change profile successfully'})
-        
-    }
-    catch(err){
-        return res.status(BAD_GATEWAY).send({message: 'change password unsuccessed'})
-    }
-}
+  let userQuery = await userModel.findOne({ id: user.id });
+  if (update.changePassword != update.confirmPassword) {
+    return res.status(BAD_REQUEST).send({
+      message: "Confirm password does not match",
+      errors: "Not match",
+    });
+  }
+  if (userQuery.password != CryptoJS.MD5(update.currentPassword).toString()) {
+    return res.status(BAD_REQUEST).send({
+      message: "Current password does not match",
+      errors: "Not match",
+    });
+  }
+
+  try {
+    update.changePassword = CryptoJS.MD5(update.changePassword).toString();
+    await userModel.updateOne(
+      { id: user.id },
+      { password: update.changePassword }
+    );
+    return res.status(OK).send({ message: "Change profile successfully" });
+  } catch (err) {
+    return res
+      .status(BAD_GATEWAY)
+      .send({ message: "change password unsuccessed" });
+  }
+};
 
 /**
  * user change profile
  */
 const changeProfile = async (req, res) => {
-    let user = new User(req.user)
-    let update = new User(req.body);
+  let user = new User(req.user);
+  let update = new User(req.body);
 
-    let validate = new ValidateService(update);
-    validate.validateEmail();
-    if (validate.hasError())
-        return res.status(BAD_REQUEST).send({ message: "Change profile failed", errors: validate.errors })
+  let validate = new ValidateService(update);
+  validate.validateEmail();
+  if (validate.hasError())
+    return res
+      .status(BAD_REQUEST)
+      .send({ message: "Change profile failed", errors: validate.errors });
 
-    try{
-        await userModel.updateOne({id: user.id}, {fullname: update.fullname, email: update.email})
-        return res.status(OK).send({message: 'Change data successfully'})
-    }
-    catch(err){
-        return res.status(BAD_GATEWAY).send({message: 'change password unsuccessed'})
-    }
-}
+  try {
+    await userModel.updateOne(
+      { id: user.id },
+      { fullname: update.fullname, email: update.email }
+    );
+    return res.status(OK).send({ message: "Change data successfully" });
+  } catch (err) {
+    return res
+      .status(BAD_GATEWAY)
+      .send({ message: "change password unsuccessed" });
+  }
+};
 
 /**
  * user login by google
  */
 
 const googleLogin = async (req, res) => {
-    console.log('header', req.headers);
-    const userLogin = req.body;
-    const userQuery = await userModel.findOne({username: userLogin.email});
-    if(!userQuery){
-        const user = new User({username: userLogin.email, email: userLogin.email, fullname: userLogin.fullname, access_token: userLogin.access_token})
-        user.id = uuidv1();
+  console.log("header", req.headers);
+  const userLogin = req.body;
 
-        // console.log(user)
-        try {
-            user.access_token = jwtService.generateJwt(user)
-            await userModel.create(user)
-            return res.status(OK).send({ message: 'Login successfully', data: userLogin })
-        }
-        catch (err) {
-            console.log(err)
-            return res.status(BAD_GATEWAY).send({ message: "OOps" })
-        }
-    
-    }
+  const emailQuery = await userModel.findOne({email: userLogin.email});
+  const unactiveEmailQuery = await userModel.findOne({email: userLogin.email+'&active'})
+  if(!!emailQuery || !!unactiveEmailQuery) {
+    return res.status(BAD_REQUEST).send({
+        message: "Register failed",
+        errors: { username: "Email already registered" },
+      });
+  }
 
+  const userQuery = await userModel.findOne({ username: userLogin.email });
+  if (!userQuery) {
+    const user = new User({
+      username: userLogin.email,
+      email: userLogin.email,
+      fullname: userLogin.fullname,
+      access_token: userLogin.access_token,
+    });
+    user.id = uuidv1();
+
+    // console.log(user)
     try {
-        userQuery.access_token = jwtService.generateJwt(userQuery)
-        await userModel.updateOne({ id: userQuery.id }, {access_token: userQuery.access_token})
-        return res.status(OK).send({ message: 'Login successfully', data: userQuery })
+      user.access_token = jwtService.generateJwt(user);
+      await userModel.create(user);
+      return res
+        .status(OK)
+        .send({ message: "Login successfully", data: userLogin });
+    } catch (err) {
+      console.log(err);
+      return res.status(BAD_GATEWAY).send({ message: "OOps" });
     }
-    catch (err) {
-        console.log(err);
-        return res.status(BAD_GATEWAY).send({ message: "OOps" })
-    }
+  }
 
+  try {
+    userQuery.access_token = jwtService.generateJwt(userQuery);
+    await userModel.updateOne(
+      { id: userQuery.id },
+      { access_token: userQuery.access_token }
+    );
+    return res
+      .status(OK)
+      .send({ message: "Login successfully", data: userQuery });
+  } catch (err) {
+    console.log(err);
+    return res.status(BAD_GATEWAY).send({ message: "OOps" });
+  }
+};
+
+const forgotPassword = async (req, res) => {
+  const { email } = req.body;
+  try {
+    const userQuery = await userModel.findOne({
+      email: email,
+    });
+    const env = process.env.NODE_ENV || "dev";
+    const uri =
+      "Link reset:" +
+      `${env == "dev" ? process.env.HOST_DEV : process.env.HOST_PRO}` +
+      "/reset-password/" +
+      `${userQuery.password}`;
+    await sendEmail({ email: email, content: uri });
+    return res.status(OK).send({ message: "Please check your email" });
+  } catch (e) {
+    return res.status(BAD_GATEWAY).send({ message: "OOps" });
+  }
+};
+
+const resetPassword = async (req, res) => {
+  const { newPassword, confirmPassword, oldPassword } = req.body;
+  if (newPassword != confirmPassword) {
+    return res.status(BAD_REQUEST).send({
+      message: "Confirm password does not match",
+      errors: "Not match",
+    });
+  }
+
+  try{
+    await userModel.updateOne(
+        { password: oldPassword },
+        { password: CryptoJS.MD5(newPassword).toString() }
+      );
+      return res.status(OK).send({ message: "succeed" });
+  }
+  catch(e){
+      console.log(e)
+  }
+};
+
+const activeAccount = async (req, res) => {
+    const {id} = req.params;
+    const user = await userModel.findOne({id: id});
+    const email = user.email.split('&');
+    await userModel.updateOne({id: id}, {email: email[0]})
+
+    return res.status(OK).send({ message: "succeed" });
 }
 
 module.exports = {
-    userList,
-    userRegister,
-    userLogin,
-    authenticate,
-    userInfo,
-    userLogout,
-    changePassword,
-    changeProfile,
-    googleLogin, 
-    updateStudentId,
-}
+  userList,
+  userRegister,
+  userLogin,
+  authenticate,
+  userInfo,
+  userLogout,
+  changePassword,
+  changeProfile,
+  googleLogin,
+  updateStudentId,
+  forgotPassword,
+  resetPassword,
+  activeAccount,
+};

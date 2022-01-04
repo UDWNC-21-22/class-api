@@ -42,7 +42,7 @@ const sendEmail = async ({email, content}) => {
         to: email, // list of receivers
         subject: "Hello ✔", // Subject line
         text: content, // plain text body
-        // html: "<b>Hello world?</b>", // html body
+        //html: "<b>Hello world?</b>", // html body
     });
 
     console.log("Message sent: %s", info.messageId);
