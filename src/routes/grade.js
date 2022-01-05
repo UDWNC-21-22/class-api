@@ -8,6 +8,7 @@ const {
     importGradeList,
     updateGrade,
     updateIsDone,
+    getStudentGrade,
 } = require('../controllers/grade.controller');
 const {middleware} = require('../middlewares/jwt.middleware')
 const multer = require('multer');
@@ -26,6 +27,7 @@ const upload = multer({ storage: storage });
 /* GET users listing. */
 router.use(middleware)
 router.post('/post', postGrade)
+router.get("/:classId/grades", getStudentGrade)
 router.get('/:classId/:assignmentId/export', exportGradeList)
 router.post('/:classId/:assignmentId/import', upload.single('data'), importGradeList)
 router.post('/:classId/:assignmentId/isDone', updateIsDone)

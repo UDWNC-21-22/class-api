@@ -461,6 +461,44 @@ const downloadGrade = async (req, res) => {
   return res.status(OK).download("./xlsxFolder/studentList.xlsx");
 };
 
+const isTeacher = async (req, res) => {
+  const {classId} = req.params
+  const {id} = req.user;
+  const _class = await classModel.findOne({id: classId});
+  if(_class?.memberId.includes(id)){
+    return res.status(OK).send({bool: false})
+  }
+  else{
+    return res.status(OK).send({bool: true})
+  }
+}
+
+const getClassMember = async (req, res) => {
+  const {classId} = req.params;
+  try{
+    const member = await classModel.findOne({id: classId});
+    const owner = [];
+    const student = [];
+
+    for(let i = 0; i < member?.ownerId.length; i++){
+      const data = await userModel.findOne({id: member?.ownerId[i]});
+      owner.push({ id: member?.ownerId[i], fullname: data.fullname});
+    }
+
+    for(let i = 0; i < member?.memberId.length; i++){
+      const data = await userModel.findOne({id: member?.memberId[i]});
+      student.push({ id: member?.memberId[i], fullname: data.fullname});
+    }
+
+
+    return res.status(OK).send({owner: owner, student: student})
+  }
+  catch(e){
+    return res.status(BAD_GATEWAY).send({ message: e?.message });
+  
+  }
+}
+
 module.exports = {
   getClass,
   createClass,
@@ -475,4 +513,6 @@ module.exports = {
   importStudentList,
   getGradeList,
   downloadGrade,
+  isTeacher,
+  getClassMember,
 };

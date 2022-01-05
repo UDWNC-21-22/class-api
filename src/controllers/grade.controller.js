@@ -276,6 +276,26 @@ const updateIsDone = async (req, res) => {
   return res.send({ message: "successed" });
 };
 
+const getStudentGrade = async (req, res) => {
+  const {id} = req.user;
+  const {classId} = req.params 
+  const _class = await classModel.findOne({id: classId});
+  const _user = await userModel.findOne({id: id})
+  const _grade = await gradeModel.findOne({classId: classId, memberId: id})
+  const grades = [];
+  let total = 0;
+
+  for(let i = 0; i < _class?.assignments.length; i++){
+    if(_class?.assignments[i].isDone == true) {
+      const g = _grade?.assignments.find((ele) => {return ele.id == _class?.assignments[i].id})
+      total = total + (g.grade * _class?.assignments[i].scoreRate / 10)
+      grades.push({id: g.id, name: g.name, grade: g.grade})
+    }
+  }
+
+  return res.status(OK).send({id: _user.id, fullname: _user.fullname, grades: grades, total: total});
+}
+
 module.exports = {
   postGrade,
   getGradeByClass,
@@ -285,4 +305,5 @@ module.exports = {
   updateGrade,
   getTotalGrade,
   updateIsDone,
+  getStudentGrade,
 };
