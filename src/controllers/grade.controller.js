@@ -288,8 +288,8 @@ const getStudentGrade = async (req, res) => {
   for(let i = 0; i < _class?.assignments.length; i++){
     if(_class?.assignments[i].isDone == true) {
       const g = _grade?.assignments.find((ele) => {return ele.id == _class?.assignments[i].id})
-      total = total + (g.grade * _class?.assignments[i].scoreRate / 10)
-      grades.push({id: g.id, name: g.name, grade: g.grade})
+      total = total + (g?.grade * _class?.assignments[i].scoreRate / 10)
+      grades.push({id: g?.id, name: g?.name, grade: g?.grade})
     }
   }
 

@@ -9,6 +9,8 @@ var indexRouter = require('./src/routes/index');
 var usersRouter = require('./src/routes/users');
 const classRouter = require('./src/routes/class');
 const gradeRouter = require('./src/routes/grade');
+const reviewRouter = require('./src/routes/review');
+const commentRouter = require('./src/routes/comment');
 
 var app = express();
 
@@ -32,8 +34,10 @@ app.use(express.static(path.join(__dirname, 'public')));
 
 app.use('/', indexRouter);
 app.use('/user', usersRouter);
-app.use('/class', classRouter)
-app.use('/grade', gradeRouter)
+app.use('/class', classRouter);
+app.use('/grade', gradeRouter);
+app.use('/review', reviewRouter);
+app.use('/comment', commentRouter);
 
 // catch 404 and forward to error handler
 app.use(function(req, res, next) {
