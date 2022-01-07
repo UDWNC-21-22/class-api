@@ -7,6 +7,7 @@ const { classModel } = require("../models/class.model");
 const { commentModel, Comment } = require("../models/comment.model");
 const { reviewModel, Review } = require("../models/review.model");
 const ValidateService = require("../services/validate.service");
+const { replyComment } = require("./notification.controller");
 
 const postComment = async (req, res) => {
   const { classId, assignmentId } = req.params;
@@ -33,11 +34,13 @@ const postComment = async (req, res) => {
   if (!_comment) {
     const _comment = new Comment({
       id: uuidv1(),
-      memberId: id,
+      memberId: ownerId,
       assignmentId: assignmentId,
       classId: classId,
     });
     _comment.comments.push({ role: role, comment: comment });
+    const _noticeId = await replyComment({comment: _comment, senderId: role == "teacher"?id: studentId});
+    _comment.notificationId=_noticeId
     await commentModel.create(_comment);
   } else {
     _comment.comments.push({ role: role, comment: comment });
@@ -49,8 +52,9 @@ const postComment = async (req, res) => {
       },
       { comments: _comment.comments }
     );
+    await replyComment({comment: _comment, senderId: ownerId});
   }
-
+  
   return res.status(OK).send({ message: _comment });
 };
 

@@ -11,6 +11,7 @@ const classRouter = require('./src/routes/class');
 const gradeRouter = require('./src/routes/grade');
 const reviewRouter = require('./src/routes/review');
 const commentRouter = require('./src/routes/comment');
+const notificationRouter = require('./src/routes/notification');
 
 var app = express();
 
@@ -38,6 +39,7 @@ app.use('/class', classRouter);
 app.use('/grade', gradeRouter);
 app.use('/review', reviewRouter);
 app.use('/comment', commentRouter);
+app.use('/notification', notificationRouter)
 
 // catch 404 and forward to error handler
 app.use(function(req, res, next) {

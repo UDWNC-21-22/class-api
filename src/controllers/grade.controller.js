@@ -13,6 +13,7 @@ const {
   ClassGradeDTO,
 } = require("../models/gradeDTO.model");
 const { writeXlsxFile, readXlsxFile } = require("../helpers/xlsx.helpers");
+const { markAsDoneAssignment } = require("./notification.controller");
 
 /**
  * Get all grade student of class
@@ -262,18 +263,27 @@ const getTotalGrade = async ({classId, memberId}) => {
 };
 
 const updateIsDone = async (req, res) => {
-  const { classId, assignmentId } = req.params;
-  const _class = await classModel.findOne({ id: classId });
-  const index = _class.assignments.findIndex(
-    (element) => element.id == assignmentId
-  );
+  try{
+    const { classId, assignmentId } = req.params;
+    const {id} = req.user
+    const _class = await classModel.findOne({ id: classId });
+    const index = _class.assignments.findIndex(
+      (element) => element.id == assignmentId
+    );
+  
+    _class.assignments[index].isDone = true;
+    await classModel.updateOne(
+      { id: classId },
+      { assignments: _class.assignments }
+    );
+      await markAsDoneAssignment({classId: classId, assignmentId: assignmentId, senderId: id})
+      return res.send({ message: "successed" });
+  }
+  catch(err){
+    return res.send({ message: err.message });
+  }
 
-  _class.assignments[index].isDone = true;
-  await classModel.updateOne(
-    { id: classId },
-    { assignments: _class.assignments }
-  );
-  return res.send({ message: "successed" });
+  
 };
 
 const getStudentGrade = async (req, res) => {

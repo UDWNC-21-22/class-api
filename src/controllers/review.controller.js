@@ -7,6 +7,7 @@ const { classModel } = require("../models/class.model");
 const { reviewModel, Review } = require("../models/review.model");
 const { commentModel } = require("../models/comment.model");
 const ValidateService = require("../services/validate.service");
+const { requestReview, markAsDoneReview } = require("./notification.controller");
 
 const postReview = async (req, res) => {
   const { classId, assignmentId } = req.params;
@@ -31,6 +32,7 @@ const postReview = async (req, res) => {
     classId: classId,
   });
   await reviewModel.create(newReview);
+  await requestReview({classId: classId, assignmentId: assignmentId, senderId: id})
   return res.status(OK).send({ message: "succeed" });
 };
 
@@ -65,8 +67,9 @@ const getReview = async (req, res) => {
 
 const markAsDone = async (req, res) => {
     const {reviewId} = req.params
+    const {id} = req.user;
     await reviewModel.updateOne({id: reviewId}, {isDone: true})
-
+  await markAsDoneReview({reviewId: reviewId, senderId: id});
     return res.status(OK).send({message: 'succeed'})
 }
 
