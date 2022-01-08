@@ -24,7 +24,7 @@ const getGradeByClass = async (req, res) => {
   const classId = req.params.id;
 
   if (!isOwnerClass(user.id, classId) || !isMemberClass(user.id, classId)) {
-    return res.status(UNAUTHORIZED).send({ message: "You not permission" });
+    return res.status(UNAUTHORIZED).send({ message: "You have no permission" });
   }
 
   var grades = await gradeModel.find({ classId });

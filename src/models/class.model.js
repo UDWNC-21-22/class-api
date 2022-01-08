@@ -10,6 +10,7 @@ class Class {
         code=null,
         inviteToken=[],
         assignments=[],
+        createAt=null
     }) {
         this.id = id;
         this.name = name;
@@ -19,6 +20,7 @@ class Class {
         this.code = code;
         this.inviteToken = inviteToken;
         this.assignments = assignments;
+        this.createAt = createAt;
     }
 }
 
@@ -37,7 +39,8 @@ const classSchema = new mongoose.Schema({
         index: Number,
         scoreRate: Number,
         isDone: Boolean,
-    }]
+    }],
+    createAt: String
 });
 
 const classModel = mongoose.model('class', classSchema);

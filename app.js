@@ -7,6 +7,7 @@ var Connect = require('./src/config/database.js');
 const cors = require('cors')
 var indexRouter = require('./src/routes/index');
 var usersRouter = require('./src/routes/users');
+var adminRouter = require('./src/routes/admin');
 const classRouter = require('./src/routes/class');
 const gradeRouter = require('./src/routes/grade');
 const reviewRouter = require('./src/routes/review');
@@ -35,6 +36,7 @@ app.use(express.static(path.join(__dirname, 'public')));
 
 app.use('/', indexRouter);
 app.use('/user', usersRouter);
+app.use('/admin', adminRouter);
 app.use('/class', classRouter);
 app.use('/grade', gradeRouter);
 app.use('/review', reviewRouter);
