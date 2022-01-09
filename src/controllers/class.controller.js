@@ -490,7 +490,6 @@ const getClassMember = async (req, res) => {
       student.push({ id: member?.memberId[i], fullname: data.fullname});
     }
 
-
     return res.status(OK).send({owner: owner, student: student})
   }
   catch(e){

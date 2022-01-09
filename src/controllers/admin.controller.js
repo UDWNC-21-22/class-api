@@ -10,7 +10,6 @@ const CryptoJS = require("crypto-js");
 const ValidateService = require("../services/validate.service");
 const JwtService = require("../services/jwt.service");
 const jwtService = new JwtService();
-const { sendEmail } = require("../helpers/class.helper");
 
 /**
  * Get all user list
@@ -22,6 +21,47 @@ const ListUser = async (req, res) => {
   return res
     .status(OK)
     .send({ data: list });
+};
+
+/**
+ * Get detail user
+ */
+ const DetailUser = async (req, res) => {
+  const {userId} = req.params
+
+  let classMemberList = await classModel.find({ memberId: { $in: [userId] } });
+  let classOwnerList = await classModel.find({ ownerId: userId });
+
+  classMemberList = classMemberList.map((item) => new Class(item._doc));
+  classOwnerList = classOwnerList.map((item) => new Class(item._doc));
+
+  let classMemberDTO = await Promise.all(
+    classMemberList.map(async (item) => {
+      const classDTO = new ClassDTO(item);
+      classDTO.member = await userModel.find({ id: { $in: item.memberId } });
+      classDTO.member = classDTO.member.map((mem) => new MemberDTO(mem));
+
+      classDTO.owner = await userModel.find({ id: { $in: item.ownerId } });
+      classDTO.owner = classDTO.owner.map((mem) => new MemberDTO(mem));
+
+      return classDTO;
+    })
+  );
+
+  let classOwnerDTO = await Promise.all(
+    classOwnerList.map(async (item) => {
+      const classDTO = new ClassDTO(item);
+      classDTO.member = await userModel.find({ id: { $in: item.memberId } });
+      classDTO.member = classDTO.member.map((mem) => new MemberDTO(mem));
+      classDTO.owner = await userModel.find({ id: { $in: item.ownerId } });
+      classDTO.owner = classDTO.owner.map((mem) => new MemberDTO(mem));
+      return classDTO;
+    })
+  );
+
+  return res
+    .status(OK)
+    .send({ data: { classMember: classMemberDTO, classOwner: classOwnerDTO } });
 };
 
 /**
@@ -47,6 +87,34 @@ const ListUser = async (req, res) => {
     .status(OK)
     .send({ data: list });
 };
+
+/**
+ * Get detail class
+ */
+const DetailClass = async (req, res) => {
+  const {classId} = req.params;
+  try{
+    const member = await classModel.findOne({id: classId});
+    const owner = [];
+    const student = [];
+
+    for(let i = 0; i < member?.ownerId.length; i++){
+      const data = await userModel.findOne({id: member?.ownerId[i]});
+      owner.push({ id: member?.ownerId[i], fullname: data.fullname});
+    }
+
+    for(let i = 0; i < member?.memberId.length; i++){
+      const data = await userModel.findOne({id: member?.memberId[i]});
+      student.push({ id: member?.memberId[i], fullname: data.fullname});
+    }
+
+    return res.status(OK).send({info: member, owner: owner, student: student})
+  }
+  catch(e){
+    return res.status(BAD_GATEWAY).send({ message: e?.message });
+  
+  }
+}
 
 /**
  * Admin Register
@@ -92,26 +160,6 @@ const adminRegister = async (req, res) => {
   user = await adminModel.create(user);
 
   return res.status(OK).send({ message: "Register successfully" });
-
-  // try {
-  //   const m = user.email;
-  //   user.email=user.email+'&active'
-  //   await adminModel.create(user);
-
-  //   const env = process.env.NODE_ENV || "dev";
-
-  //   const uri =
-  //    `${env == "dev" ? process.env.HOST_DEV : process.env.HOST_PRO}` +
-  //     "/active/" +
-  //     `${user.id}`;
-
-  //   await sendEmail({email: m, content: `Active link: ${uri}`})
-
-  //   return res.status(OK).send({ message: "Register successfully. Please check your email to active account" });
-  // } catch (err) {
-  //   console.log(err);
-  //   return res.status(BAD_GATEWAY).send({ message: "OOps" });
-  // }
 };
 
 /**
@@ -140,22 +188,6 @@ const adminLogin = async (req, res) => {
 
   userQuery = new Admin(userQuery._doc);
   userQuery.access_token = jwtService.generateJwt(userQuery);
-  // console.log(userQuery)
-
-  //check is activated account
-  // const check = userQuery.email.split('&')
-  // if(check[1] == 'active')
-  // {
-  //   const env = process.env.NODE_ENV || "dev";
-  //   const uri =
-  //    `${env == "dev" ? process.env.HOST_DEV : process.env.HOST_PRO}` +
-  //     "/active/" +
-  //     `${userQuery.id}`;
-
-  //   await sendEmail({email: check[0], content: `Active link: ${uri}`})
-
-  //   return res.status(BAD_REQUEST).send({message: "please check your email to active account"})
-  // }
 
   try {
     await adminModel.updateOne({ id: userQuery.id }, userQuery);
@@ -166,42 +198,6 @@ const adminLogin = async (req, res) => {
     console.log(err);
     return res.status(BAD_GATEWAY).send({ message: "OOps" });
   }
-};
-
-const activeAccount = async (req, res) => {
-  const { id } = req.params;
-  const user = await adminModel.findOne({ id: id });
-  const email = user.email.split("&");
-  await adminModel.updateOne({ id: id }, { email: email[0] });
-
-  return res.status(OK).send({ message: "succeed" });
-};
-
-/**
- * User authenticate
- */
-const authenticate = async (req, res) => {
-  let authorization = req.headers.authorization;
-  let accessToken = authorization.split(" ")[1].trim();
-  let data = jwtService.verifyJwt(accessToken);
-  // console.log(data)
-
-  if (!data)
-    return res.status(FORBIDDEN).send({ message: "Access token invalid" });
-
-  let user = await adminModel.findOne({ id: data.id });
-  return res.status(OK).send({ data: new Admin(user) });
-};
-
-/**
- * Get info user
- */
-const adminInfo = async (req, res) => {
-  let user = new Admin(req.user);
-  let userQuery = await adminModel.findOne({ id: user.id });
-  if (!userQuery)
-    return res.status(BAD_REQUEST).send({ message: "Account not found" });
-  return res.status(OK).send({ data: new Admin(req.user) });
 };
 
 /**
@@ -220,20 +216,36 @@ const adminLogout = async (req, res) => {
 
 // update studentID
 const updateStudentId = async (req, res) => {
-  const { id } = req.user;
-  const _student = await userModel.findOne({ studentId: req.body.studentId });
+  const newStudentId = req.body.studentId
+  const oldStudent = req.body.user
 
-  if (_student != null) {
-    return res.status(BAD_REQUEST).send({ message: "Student ID is taken" });
+  const student = await userModel.findOne({ id: oldStudent.id });
+
+  if (student) {
+    await userModel.updateOne({ id: oldStudent.id }, { studentId: newStudentId });
+
+    const newStudent = await userModel.findOne({ id: oldStudent.id });
+    return res.status(OK).send({ message: "Update student ID successfully", data: newStudent });
   }
-
-  const student = await userModel.findOne({ id: id });
-  if (!student.studentId) {
-    await userModel.updateOne({ id: id }, { studentId: req.body.studentId });
-    return res.status(OK).send({ message: "success" });
+  else{
+    return res.status(BAD_GATEWAY).send({ message: "Update failed" });
   }
+};
 
-  return res.status(BAD_REQUEST).send({ message: "Student ID existed" });
+/**
+ * User authenticate
+ */
+ const authenticate = async (req, res) => {
+  let authorization = req.headers.authorization;
+  let accessToken = authorization.split(" ")[1].trim();
+  let data = jwtService.verifyJwt(accessToken);
+
+  if (!data)
+    return res.status(FORBIDDEN).send({ message: "Access token invalid" });
+
+  let user = await adminModel.findOne({ id: data.id });
+
+  return res.status(OK).send({ data: new Admin(user) });
 };
 
 module.exports = {
@@ -241,10 +253,10 @@ module.exports = {
   ListAdmin,
   ListClass,
   adminRegister,
-  activeAccount,
   adminLogin,
-  authenticate,
-  adminInfo,
   adminLogout,
-  updateStudentId
+  updateStudentId,
+  DetailUser,
+  DetailClass,
+  authenticate
 };
