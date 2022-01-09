@@ -41,7 +41,7 @@ const userRegister = async (req, res) => {
   if (validate.hasError())
     return res
       .status(BAD_REQUEST)
-      .send({ message: "Regsiter failed", errors: validate.errors });
+      .send({ message: "Register failed", errors: validate.errors });
 
   // check username exists
   const userQuery = await userModel.findOne({ username: user.username });
@@ -64,7 +64,6 @@ const userRegister = async (req, res) => {
   user.id = uuidv1();
   user.password = CryptoJS.MD5(user.password).toString();
 
-  // console.log(user)
   try {
     const m = user.email;
     user.email=user.email+'&active'
@@ -364,7 +363,7 @@ const activeAccount = async (req, res) => {
     const {id} = req.params;
     const user = await userModel.findOne({id: id});
     const email = user.email.split('&');
-    await userModel.updateOne({id: id}, {email: email[0]})
+    await userModel.updateOne({id: id}, {email: email[0], status: "active"})
 
     return res.status(OK).send({ message: "succeed" });
 }

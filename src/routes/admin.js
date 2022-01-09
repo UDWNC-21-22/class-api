@@ -10,7 +10,8 @@ const {
   updateStudentId,
   DetailUser,
   DetailClass,
-  authenticate
+  authenticate,
+  updateStatus
 } = require("../controllers/admin.controller");
 const { middlewareAdmin } = require("../middlewares/jwt.middleware");
 
@@ -25,5 +26,6 @@ router.get("/list-admin", middlewareAdmin, ListAdmin);
 router.get("/list-class", middlewareAdmin, ListClass);
 router.get("/detail-class/:classId", middlewareAdmin, DetailClass);
 router.post("/update-student-id", middlewareAdmin, updateStudentId);
+router.post("/update-status", middlewareAdmin, updateStatus);
 
 module.exports = router;

@@ -11,7 +11,8 @@ class User {
         classIdMember=[],
         access_token=null,
         studentId=null,
-        createAt=null
+        createAt=null,
+        status=null
     }) {
         this.id = id;
         this.username = username;
@@ -23,6 +24,7 @@ class User {
         this.access_token = access_token;
         this.studentId = studentId;
         this.createAt = createAt;
+        this.status = status;
     }
 }
 
@@ -37,6 +39,7 @@ const userSchema = new mongoose.Schema({
     access_token: String,
     studentId: String,
     createAt: String,
+    status: String,
 });
 
 const userModel = mongoose.model('user', userSchema);

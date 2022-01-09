@@ -29,6 +29,8 @@ const ListUser = async (req, res) => {
  const DetailUser = async (req, res) => {
   const {userId} = req.params
 
+  const info =  await userModel.findOne({ id: userId });
+
   let classMemberList = await classModel.find({ memberId: { $in: [userId] } });
   let classOwnerList = await classModel.find({ ownerId: userId });
 
@@ -61,7 +63,7 @@ const ListUser = async (req, res) => {
 
   return res
     .status(OK)
-    .send({ data: { classMember: classMemberDTO, classOwner: classOwnerDTO } });
+    .send({ data: { info: info, classMember: classMemberDTO, classOwner: classOwnerDTO } });
 };
 
 /**
@@ -100,15 +102,15 @@ const DetailClass = async (req, res) => {
 
     for(let i = 0; i < member?.ownerId.length; i++){
       const data = await userModel.findOne({id: member?.ownerId[i]});
-      owner.push({ id: member?.ownerId[i], fullname: data.fullname});
+      owner.push({ id: member?.ownerId[i], fullname: data.fullname, username: data.username, email: data.email});
     }
 
     for(let i = 0; i < member?.memberId.length; i++){
       const data = await userModel.findOne({id: member?.memberId[i]});
-      student.push({ id: member?.memberId[i], fullname: data.fullname});
+      student.push({ id: member?.memberId[i], fullname: data.fullname, username: data.username, email: data.email});
     }
 
-    return res.status(OK).send({info: member, owner: owner, student: student})
+    return res.status(OK).send({data: {info: member, owner: owner, student: student}})
   }
   catch(e){
     return res.status(BAD_GATEWAY).send({ message: e?.message });
@@ -232,6 +234,24 @@ const updateStudentId = async (req, res) => {
   }
 };
 
+// update status
+const updateStatus = async (req, res) => {
+  const newStatus = req.body.status
+  const oldStudent = req.body.user
+
+  const student = await userModel.findOne({ id: oldStudent.id });
+
+  if (student) {
+    await userModel.updateOne({ id: oldStudent.id }, { status: newStatus });
+
+    const newStudent = await userModel.findOne({ id: oldStudent.id });
+    return res.status(OK).send({ message: "Update status successfully", data: newStudent });
+  }
+  else{
+    return res.status(BAD_GATEWAY).send({ message: "Update failed" });
+  }
+};
+
 /**
  * User authenticate
  */
@@ -258,5 +278,6 @@ module.exports = {
   updateStudentId,
   DetailUser,
   DetailClass,
-  authenticate
+  authenticate,
+  updateStatus
 };
