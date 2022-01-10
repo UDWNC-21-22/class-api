@@ -328,6 +328,7 @@ const forgotPassword = async (req, res) => {
       console.log(email);
       console.log(userQuery);
     await sendEmail({ email: email, content: uri });
+    console.log('test');
     return res.status(OK).send({ message: "Please check your email" });
   } catch (e) {
     return res.status(BAD_GATEWAY).send({ message: "OOps" });
