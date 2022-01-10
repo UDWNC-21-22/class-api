@@ -56,7 +56,6 @@ const replyComment = async ({comment, senderId}) => {
     if(comment.comments.length == 1){
         //if sender is a student
         if(comment.memberId == senderId){
-            console.log(1);
             const _class = await classModel.findOne({id: comment.classId});
             for (let i = 0; i < _class?.ownerId.length; i++) {
                 receivers.push({
@@ -66,17 +65,17 @@ const replyComment = async ({comment, senderId}) => {
               }
         }
         else{
-            console.log(2);
             receivers.push({
                 id: comment.memberId,
                 isRead: false,
             })
         }
+        
         const id = uuidv1()
         const _notice = new Notification({
             id: id,
             senders: senderId,
-            notification: `${_user?.fullname} comments on assignment`,
+            notification: `${_user.fullname} comments on assignment`,
             receivers: receivers,
             notificationCode: replyComment_Code,
           });

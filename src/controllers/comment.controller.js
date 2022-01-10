@@ -24,7 +24,7 @@ const postComment = async (req, res) => {
     ownerId = studentId;
     role = "teacher";
   }
-
+  
   _comment = await commentModel.findOne({
     classId: classId,
     assignmentId: assignmentId,
@@ -39,7 +39,7 @@ const postComment = async (req, res) => {
       classId: classId,
     });
     _comment.comments.push({ role: role, comment: comment });
-    const _noticeId = await replyComment({comment: _comment, senderId: role == "teacher"?id: studentId});
+    const _noticeId = await replyComment({comment: _comment, senderId: ownerId});
     _comment.notificationId=_noticeId
     await commentModel.create(_comment);
   } else {
