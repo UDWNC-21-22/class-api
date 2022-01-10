@@ -325,6 +325,8 @@ const forgotPassword = async (req, res) => {
       `${env == "dev" ? process.env.HOST_DEV : process.env.HOST_PRO}` +
       "/reset-password/" +
       `${userQuery.password}`;
+      console.log(email);
+      console.log(userQuery);
     await sendEmail({ email: email, content: uri });
     return res.status(OK).send({ message: "Please check your email" });
   } catch (e) {
