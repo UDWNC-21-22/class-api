@@ -76,7 +76,7 @@ const replyComment = async ({comment, senderId}) => {
         const _notice = new Notification({
             id: id,
             senders: senderId,
-            notification: `${_user.fullname} comments on assignment`,
+            notification: `${_user?.fullname} comments on assignment`,
             receivers: receivers,
             notificationCode: replyComment_Code,
           });
