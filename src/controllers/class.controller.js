@@ -352,12 +352,12 @@ const importStudentList = async (req, res) => {
 
   const _class = await classModel.findOne({ id: classId });
   const students = [];
-  console.log(studentList);
+  
   for (let i = 0; i < _class.memberId.length; i++) {
     const student = await userModel.findOne({ id: _class.memberId[i] });
     students.push({id: student.id, studentId: student.studentId, fullname: student.fullname });
   }
-  console.log(students);
+ 
   for (let i = 0; i < studentList.length; i++) {
     let isInClass = false;
     for (let j = 0; i < students.length; j++) {

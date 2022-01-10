@@ -142,7 +142,10 @@ const exportGradeList = async (req, res) => {
 
   for (let i = 0; i < _class.memberId.length; i++) {
     const student = await userModel.findOne({ id: _class.memberId[i] });
-    students.push({ studentId: student.studentId, grade: "" });
+    if(!student.studentId) {
+      continue;
+    }
+    students.push({ studentId: student.studentId, grade: '' });
   }
 
   writeXlsxFile("gradeList", students);
@@ -158,6 +161,7 @@ const importGradeList = async (req, res) => {
 
   studentList.forEach(async (e) => {
     const student = await userModel.findOne({ studentId: e.studentId });
+
     const assignment = await gradeModel.findOne({
       memberId: student.id,
       classId: classId,

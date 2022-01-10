@@ -53,8 +53,7 @@ const userRegister = async (req, res) => {
   }
   //check email exists
   const emailQuery = await userModel.findOne({email: user.email});
-  const unactiveEmailQuery = await userModel.findOne({email: user.email+'&active'})
-  if(!!emailQuery || !!unactiveEmailQuery) {
+  if(!!emailQuery) {
     return res.status(BAD_REQUEST).send({
         message: "Register failed",
         errors: { username: "Email already registered" },
@@ -63,10 +62,10 @@ const userRegister = async (req, res) => {
 
   user.id = uuidv1();
   user.password = CryptoJS.MD5(user.password).toString();
+  user.createAt = new Date().toLocaleString();
+  user.status = 'unactive';
 
   try {
-    const m = user.email;
-    user.email=user.email+'&active'
     await userModel.create(user);
 
     const env = process.env.NODE_ENV || "dev";
@@ -76,7 +75,7 @@ const userRegister = async (req, res) => {
       "/active/" +
       `${user.id}`;
 
-    await sendEmail({email: m, content: `Active link: ${uri}`})
+    await sendEmail({email: user.email, content: `Active link: ${uri}`})
 
     return res.status(OK).send({ message: "Register successfully. Please check your email to active account" });
   } catch (err) {
@@ -114,8 +113,7 @@ const userLogin = async (req, res) => {
   // console.log(userQuery)
   
   //check is actived account
-  const check = userQuery.email.split('&')
-  if(check[1] == 'active')
+  if(userQuery.status == 'unactive')
   {
     
     const env = process.env.NODE_ENV || "dev";
@@ -124,9 +122,12 @@ const userLogin = async (req, res) => {
       "/active/" +
       `${userQuery.id}`;
 
-    await sendEmail({email: check[0], content: `Active link: ${uri}`})
+    await sendEmail({email: userQuery.email, content: `Active link: ${uri}`})
 
     return res.status(BAD_REQUEST).send({message: "please check your email to active account"})
+  }
+  else if(userQuery.status == 'blocked'){
+    return res.status(BAD_REQUEST).send({message: "User was banned"})
   }
 
   try {
@@ -269,17 +270,8 @@ const changeProfile = async (req, res) => {
  */
 
 const googleLogin = async (req, res) => {
-  console.log("header", req.headers);
   const userLogin = req.body;
 
-  const emailQuery = await userModel.findOne({email: userLogin.email});
-  const unactiveEmailQuery = await userModel.findOne({email: userLogin.email+'&active'})
-  if(!!emailQuery || !!unactiveEmailQuery) {
-    return res.status(BAD_REQUEST).send({
-        message: "Register failed",
-        errors: { username: "Email already registered" },
-      });
-  }
 
   const userQuery = await userModel.findOne({ username: userLogin.email });
   if (!userQuery) {
@@ -288,6 +280,8 @@ const googleLogin = async (req, res) => {
       email: userLogin.email,
       fullname: userLogin.fullname,
       access_token: userLogin.access_token,
+      createAt: new Date().toLocaleString(),
+      status: 'active'
     });
     user.id = uuidv1();
 
@@ -362,8 +356,7 @@ const resetPassword = async (req, res) => {
 const activeAccount = async (req, res) => {
     const {id} = req.params;
     const user = await userModel.findOne({id: id});
-    const email = user.email.split('&');
-    await userModel.updateOne({id: id}, {email: email[0], status: "active"})
+    await userModel.updateOne({id: id}, {status: "active"})
 
     return res.status(OK).send({ message: "succeed" });
 }

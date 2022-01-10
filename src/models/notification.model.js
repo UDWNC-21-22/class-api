@@ -7,12 +7,14 @@ class Notification {
         receivers=null,
         notification=null,
         notificationCode=null,
+        isForAdmin=false,
     }) {
         this.id = id;
         this.senders = senders;
         this.receivers = receivers;
         this.notification = notification;
         this.notificationCode = notificationCode;
+        this.isForAdmin = isForAdmin;
     }
 }
 
@@ -22,6 +24,7 @@ const notificationSchema = new mongoose.Schema({
     senders: String,
     receivers: Array,
     notificationCode: Number,
+    isForAdmin: Boolean,
 });
 
 const notificationModel = mongoose.model('notification', notificationSchema);

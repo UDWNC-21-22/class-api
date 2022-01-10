@@ -15,7 +15,7 @@ const multer = require('multer');
 const { updateAssignment } = require('../controllers/class.controller');
 const storage = multer.diskStorage({
     destination: function(req, file, cb) {
-      cb(null, './xlsxFolder');s
+      cb(null, './xlsxFolder');
     },
     filename: function(req, file, cb) {
         cb(null , file.originalname )
