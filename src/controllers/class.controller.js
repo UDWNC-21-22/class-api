@@ -35,6 +35,7 @@ const createClass = async (req, res) => {
   class_.id = uuidv1();
   class_.code = shortCode();
   class_.ownerId = [user.id];
+  class_.createAt = new Date().toLocaleString();
 
   let validate = new ValidateService(class_);
   validate.required(["name", "description"]);
