@@ -261,7 +261,7 @@ const changeProfile = async (req, res) => {
   } catch (err) {
     return res
       .status(BAD_GATEWAY)
-      .send({ message: "change password unsuccessed" });
+      .send({ message: "change password unsuccessfully" });
   }
 };
 
@@ -321,7 +321,7 @@ const forgotPassword = async (req, res) => {
     });
     const env = process.env.NODE_ENV || "dev";
     const uri =
-      "Link reset:" +
+      "Link reset: " +
       `${env == "dev" ? process.env.HOST_DEV : process.env.HOST_PRO}` +
       "/reset-password/" +
       `${userQuery.password}`;

@@ -210,7 +210,7 @@ const inviteClass = async (req, res) => {
   const inviteToken = jwtService.generateInviteToken(data);
   const env = process.env.NODE_ENV || "dev";
   const contentInvite =
-    "Link invite:" +
+    "Link invite: " +
     `${env == "dev" ? process.env.HOST_DEV : process.env.HOST_PRO}` +
     "/confirm-invite/" +
     `${inviteToken}`;
