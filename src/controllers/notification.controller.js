@@ -39,6 +39,9 @@ const markAsDoneAssignment = async ({ classId, assignmentId, senderId }) => {
       notification: `${assignment.name} is done`,
       receivers: receivers,
       notificationCode: markAsDoneAssignment_Code,
+      elementIds: {
+        classId: classId
+      }
     });
 
     await notificationModel.create(_notice);
@@ -78,6 +81,10 @@ const replyComment = async ({comment, senderId}) => {
             notification: `${_user.fullname} comments on assignment`,
             receivers: receivers,
             notificationCode: replyComment_Code,
+            elementIds: {
+              classId: comment.classId,
+              studentId: senderId
+            }
           });
           await notificationModel.create(_notice);
 
@@ -130,6 +137,10 @@ const requestReview = async ({ classId, assignmentId, senderId }) => {
       notification: `${_user.fullname} send a request review ${assignment.name}`,
       receivers: receivers,
       notificationCode: requestReview_Code,
+      elementIds:{
+        classId: classId,
+        studentId: senderId,
+      }
     });
 
     await notificationModel.create(_notice);
@@ -156,6 +167,10 @@ const markAsDoneReview = async ({ reviewId, senderId }) => {
         isRead: false,
       },
     notificationCode: markAsDoneReview_Code,
+    elementIds: {
+      classId: _review.classId,
+
+    }
   });
 
   await notificationModel.create(_notice);
@@ -179,7 +194,8 @@ const getNotification = async (req, res) => {
                 notification: _notification[i].notification,
                 sender: _notification[i].sender,
                 isRead: receiver.isRead,
-                notificationCode: _notification[i].notificationCode
+                notificationCode: _notification[i].notificationCode,
+                elementIds: _notification[i].elementIds
             })
         }
     }
