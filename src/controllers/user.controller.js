@@ -323,8 +323,8 @@ const forgotPassword = async (req, res) => {
     const uri =
       "Link reset: " +
       `${env == "dev" ? process.env.HOST_DEV : process.env.HOST_PRO}` +
-       "/reset-password/" +`/${email}` +
-      `${userQuery.password}`;
+       "/reset-password" +`/${email}` +
+      `/${userQuery.password}`;
 
     await sendEmail({ email: email, content: uri });
 
