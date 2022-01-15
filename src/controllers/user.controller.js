@@ -323,12 +323,11 @@ const forgotPassword = async (req, res) => {
     const uri =
       "Link reset: " +
       `${env == "dev" ? process.env.HOST_DEV : process.env.HOST_PRO}` +
-      "/reset-password/" +
+      `/${email}` + "/reset-password/" +
       `${userQuery.password}`;
-      console.log(email);
-      console.log(userQuery);
+
     await sendEmail({ email: email, content: uri });
-    console.log('test');
+
     return res.status(OK).send({ message: "Please check your email" });
   } catch (e) {
     return res.status(BAD_GATEWAY).send({ message: "OOps" });
@@ -336,7 +335,7 @@ const forgotPassword = async (req, res) => {
 };
 
 const resetPassword = async (req, res) => {
-  const { newPassword, confirmPassword, oldPassword } = req.body;
+  const { newPassword, confirmPassword, oldPassword, email } = req.body;
   if (newPassword != confirmPassword) {
     return res.status(BAD_REQUEST).send({
       message: "Confirm password does not match",
@@ -346,7 +345,7 @@ const resetPassword = async (req, res) => {
 
   try{
     await userModel.updateOne(
-        { password: oldPassword },
+        { email: email, password: oldPassword },
         { password: CryptoJS.MD5(newPassword).toString() }
       );
       return res.status(OK).send({ message: "succeed" });
